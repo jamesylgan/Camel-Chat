@@ -1,57 +1,114 @@
-val main
+open data
 
-val parse
+(* typically a string or string list depending on implementation *)
+type info
 
-    (* packet: cmd; userid; chatid; msg *)
-val receive
-cmds:
-    - add_msg
-    - get_history
-    - get_users
-    - create_private_chat
-    - create_group_chat
-    - get_public_groups
-    - create_user
-    - get_curr_chats
-    - get_chat
-    - leave_chat
-    - join_chat
+(* [cmd] is the type of commands that can be called from the client *)
+type cmd = ADD_MSG | GET_HISTORY | GET_USERS | CREATE_PRIV_CHAT |
+           CREATE_PUB_CHAT | CREATE_USER | JOIN_CHAT |
+           LEAVE_CHAT
 
-(* add userid to list of users in chat, send last 10 messages *)
-val join_chat
+(* [client_input] is the message that the server receives from the client *)
+type client_input = {
+  userid: int;
+  cmd: cmd;
+  info: info
+}
 
-(*if no one left in chat then then remove the entry *)
-val leave_chat
+(* [response] is the message that the server sends to the client *)
+type response = {
+  userid: int;
+  success: bool;
+  info: info
+}
 
-val add_user
+(* [state] is the current state of the server. The server maintains a 4
+ * dictionaries:
+   - user_list maps userid to usernames
+   - priv_chat_list maps each private chatid to a list of userids
+   - pub_chat_list maps each public chatid to a list of userids
+   - chat_msg maps each chatid to a (int * string) list (ie userid, messages of
+     the chat)
+   - pub_chat_name maps each public chat to its name (private chats do not have
+     a name)
+ *)
+type state = {
+  user_list: Dictionary;
+  priv_chat_list: Dictionary;
+  pub_chat_list: Dictionary;
+  chat_msg: Dictionary
+}
 
-val remove_user
+(* [main] is the main function that loops on [receive] and updates the local
+ * state *)
+val main: unit
 
-val send
+(* [parse str] passes the string [str] that was received from server and returns
+ * the corresponding command type *)
+val parse: string -> command
 
-(* remove disconnected user from chat lists
- * broadcast message to all chats that the user is in: "user _ has left" *)
-val handle_disconnect
+(* [receive] receives message from the server connection, invokes parse to get
+ * the command, and finally invokes another function based on command.cmd *)
+val receive: unit -> state
 
-val broadcast_to_chat
+(* [join_chat st cmd] adds userid to user_list in [st], sends the last 10
+ * messages of the chat that was joined in the response message. Returns the
+ * updated state *)
+val join_chat: state -> command -> state
 
-val get_username (* broadcasting message based on username *)
+(* [leave_chat st cmd] removes the userid from [st] and sends a response based
+ * on the success or failure of the removal. If the chat is not mapped to any
+ * userid in the updated state, then the chat is removed from the pub_chat_list
+ * or priv_chat_list depending on the type of chat. Sends a response to the
+ * client and returns the updated state.
+ *)
+val leave_chat: state -> command -> state
 
-val add_msg
+(* [create_user st cmd] initializes the username with a userid and adds the new
+ * userid to user_list in [st]. Sends a response to the client and returns the
+ * updated state. *)
+val create_user: state -> command -> state
 
-val get_history
+(* [remove_user st cmd] removes the user from user_list in [st]. Sends a
+ * response to the client and returns the updated state. *)
+val remove_user: state -> command -> state
 
-val create_private_chat (* send message other client *)
+(* [send rsp] sends the response to the server through the connection. *)
+val send: response -> unit
 
-val create_group_chat
+(* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
+ * server. It removes the disconnected [uid] from user_list and from all
+ * chats that the user is in. Broadcasts message to all chats that the user was
+ * in: "user _ has left". Sends a response to the client and returns the updated
+ * state. *)
+val handle_disconnect: state -> int -> state
 
-val get_public_groups
+(* [broadcast_to_chat st uid] is a helper for [handle_disconnect] to send
+ * messages to all chats that the disconnected [uid] was in. *)
+val broadcast_to_chat: state -> ()
 
-val get_curr_chats
+(* [get_username st int] is the username associated with [uid] *)
+val get_username: state -> int -> string
 
-val create_user
+(* [add_msg st cmd] adds a message to chat_msg in [st]. Sends a response to the
+ * client and returns the updated state. *)
+val add_msg: state -> command -> state
 
-(* when users enter a chat, send the last 10 messages *)
-val get_chat
+(* [get_history st cmd] gets the last 10 messages from the chat requested for in
+ * [cmd], and sends a response to the client with the chat history. Returns the
+ * same state. *)
+val get_history: state -> command -> state
 
-val get_users
+(* [create_private_chat st cmd] initializes a chatid for the chat and adds it
+ * to the priv_chat_list in [st]. Sends a response to the client and returns the
+ * updated state. *)
+val create_private_chat: state -> command -> state
+
+(* [create_pub_chat st cmd] initializes a chatid for the chat and adds it
+ * to the pub_chat_list in [st]. Sends a response to the client and returns the
+ * updated state. *)
+val create_pub_chat: state -> command -> state
+
+(* [get_public_chat st cmd] gets the pub_chat_list from [st] and returns the
+ * list in the response to the client. Returns the same state. *)
+val get_public_chat: state -> command -> state

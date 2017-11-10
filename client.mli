@@ -28,4 +28,4 @@ val create_group_chat
 
 val leave_chat
 
-type status = {userid; curr_chatid} 
+type status = {userid; curr_chatid}
