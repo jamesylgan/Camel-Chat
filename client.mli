@@ -1,31 +1,47 @@
-val main
+type info
 
-val start_game
+type state = {
+  userid : info;
+  curr_chatid : int
+}
 
-val create_user
+type server_response = {
+  success : bool;
+  info : string
+}
 
-val parse
+type client_command = {
+  userid : int;
+  cmd: string;
+  info: string
+}
 
-val receive
+val main : unit -> unit
 
-val send_msg
+val parse : string -> client_command
 
-val get_public_chats
+val create_user : client_command -> state
 
-val get_online_users
+val send : client_command -> unit
 
-val get_curr_chats
+val receive : unit -> server_response
 
-val join_chat
+val send_msg : client_command -> unit
 
-val help
+val get_public_chats : client_command -> unit
 
-val get_history
+val get_online_users : client_command -> unit
 
-val create_private_chat
+val get_curr_chats : client_command -> unit
 
-val create_group_chat
+val join_chat : client_command -> state
 
-val leave_chat
+val help : client_command -> unit
 
-type status = {userid; curr_chatid} 
+val get_history : client_command -> unit
+
+val create_private_chat : client_command -> state
+
+val create_group_chat : client_command -> state
+
+val leave_chat : client_command -> state
