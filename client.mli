@@ -1,7 +1,9 @@
 type info
 
+type command
+
 type state = {
-  userid : info;
+  userid : int;
   curr_chatid : int
 }
 
@@ -10,38 +12,43 @@ type server_response = {
   info : string
 }
 
-type client_command = {
+type client_output = {
   userid : int;
-  cmd: string;
-  info: string
+  cmd: command;
+  info: info
 }
 
 val main : unit -> unit
 
-val parse : string -> client_command
+(* [parse s] is the client command that gets parsed from a user's input string
+ * [s]. Raises "Invalid command" if [s] is not a command. *)
+val parse : string -> command
 
-val create_user : client_command -> state
+(* [create_user c] is the state that results from updating .   *)
+val create_user : string -> client_output
 
-val send : client_command -> unit
+val send_msg : string -> client_output
+
+val get_public_chats : unit -> client_output
+
+val get_online_users : unit -> client_output
+
+val get_curr_chats : unit -> client_output
+
+val join_chat : string -> client_output
+
+val change_chat : string -> client_output
+
+val help : unit -> client_output
+
+val get_history : unit -> client_output
+
+val create_private_chat : string -> client_output
+
+val create_group_chat : string -> client_output
+
+val leave_chat : string -> client_output
+
+val send : client_output -> unit
 
 val receive : unit -> server_response
-
-val send_msg : client_command -> unit
-
-val get_public_chats : client_command -> unit
-
-val get_online_users : client_command -> unit
-
-val get_curr_chats : client_command -> unit
-
-val join_chat : client_command -> state
-
-val help : client_command -> unit
-
-val get_history : client_command -> unit
-
-val create_private_chat : client_command -> state
-
-val create_group_chat : client_command -> state
-
-val leave_chat : client_command -> state
