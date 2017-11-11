@@ -39,6 +39,18 @@ type state = {
   chat_msg: Dictionary
 }
 
+(* [input_of_string s] is the client_input record of [s] *)
+val input_of_string: string -> client_input
+
+(* [response_of_string s] is the response record of [s] *)
+val response_of_string: string -> response
+
+(* [string_of_input input] is the string of [input] *)
+val string_of_input: client_input -> string
+
+(* [string_of_response res] is the string of [res] *)
+val string_of_response: response -> string
+
 (* [main] is the main function that loops on [receive] and updates the local
  * state *)
 val main: unit
