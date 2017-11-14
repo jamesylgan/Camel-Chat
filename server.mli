@@ -31,12 +31,14 @@ type response = {
      the chat)
    - pub_chat_name maps each public chat to its name (private chats do not have
      a name)
+   - chat_msg maps the chatid to a list of messages that was sent in the chat
  *)
 type state = {
   user_list: Dictionary;
   priv_chat_list: Dictionary;
   pub_chat_list: Dictionary;
-  chat_msg: Dictionary
+  pub_chat_name: Dictionary;
+  chat_msg: Dictionary;
 }
 
 (* [input_of_string s] is the client_input record of [s] *)
