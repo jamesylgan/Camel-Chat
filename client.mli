@@ -31,12 +31,10 @@ type server_response = {
  * a user's command.
  * - [userid]: Same as above
  * - [cmd] contains what command the user issues.
- * - [info]: Same as above
 *)
 type client_output = {
   userid : int;
   cmd: command;
-  info: info
 }
 
 (* [main ()] is the main function that starts the REPL by reading user input,
