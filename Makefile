@@ -1,14 +1,19 @@
 test:
-	ocamlbuild -use-ocamlfind test_server.byte && ./test_server.byte
+	ocamlbuild -use-ocamlfind test_server.byte && ./test_server.byte -port ${PORT}
+#eg make PORT=9999 test
+
+tclient:
+	ocamlbuild -use-ocamlfind test_client.byte && ./test_client.byte -host ${HOST} -port ${PORT}
+#eg make HOST="127.0.0.1" PORT=9999 tclient
 
 server:
 	ocamlbuild -use-ocamlfind server.byte && ./server.byte
 
 client:
-	ocamlbuild -use-ocamlfind client.byte && ./client.byte
+	ocamlbuild -use-ocamlfind client.byte && ./client.byte -ip ${IP} -port ${PORT}
 
 check:
-	bash checkenv.sh 
+	bash checkenv.sh
 
 clean:
 	ocamlbuild -clean

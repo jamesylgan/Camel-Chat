@@ -4,3 +4,4 @@ PKG str
 PKG ANSITerminal
 PKG Core
 PKG Async
+FLG -ppx 'ppx-jane -as-ppx'
