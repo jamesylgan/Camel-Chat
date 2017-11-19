@@ -53,9 +53,17 @@ let get_public_chats (st: state) () =
     cmd = Get_public_chats ();
   }
 
-let get_online_users st s = failwith "Unimplemented"
+let get_online_users (st: state) () =
+  {
+    userid = st.userid;
+    cmd = Get_online_users ();
+  }
 
-let get_curr_chats st () = failwith "Unimplemented"
+let get_curr_chats (st: state) () =
+  {
+    userid = st.userid;
+    cmd = Get_curr_chats ();
+  }
 
 let join_chat st s = failwith "Unimplemented"
 

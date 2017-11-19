@@ -9,6 +9,9 @@ type response = {
 
 exception Quit
 
+(*I don't completely understand this, but
+  what purpose does ref serve? Can we not use ints?
+*)
 let st = ref []
 let uid = ref (-1)
 let next_uid = fun () -> uid := (!uid) + 1; !uid
