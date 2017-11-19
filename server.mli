@@ -1,55 +1,33 @@
 open data
 
+(* typically an int or string or string list depending on implementation *)
+type info = string | string list | int
+
 (* [cmd] is the type of commands that can be called from the client *)
-type command =
-  | Create_user of string
-  | Send_msg of string
-  | Get_public_chats of unit
-  | Get_online_users of unit
-  | Get_curr_chats of unit
-  | Join_chat of string
-  | Change_chat of string
-  | Get_history of unit
-  | Create_private_chat of string
-  | Create_group_chat of string
-  | Leave_chat of string
+type cmd = SEND_MSG | GET_HISTORY | GET_ONLINE_USERS | CREATE_PRIV_CHAT |
+           CREATE_PUB_CHAT | CREATE_USER | JOIN_CHAT | LEAVE_CHAT |
+           GET_PUB_CHAT
 
 
 (* [client_input] is the message that the server receives from the client *)
 type client_input = {
   userid: int;
-  cmd: command
+  cmd: cmd;
+  info: info
 }
 
-(* [state] is the current state of the server. The server maintains a 4
- * dictionaries:
-   - user_list maps userid to usernames
-   - priv_chat_list maps each private chatid to a list of userids
-   - pub_chat_list maps each public chatid to a list of userids
-   - chat_msg maps each chatid to a (int * string) list (ie userid, messages of
-     the chat)
-   - pub_chat_name maps each public chat to its name (private chats do not have
-     a name)
-   - chat_msg maps the chatid to a list of messages that was sent in the chat
- *)
-type state = {
-  user_list: Dictionary;
-  priv_chat_list: Dictionary;
-  pub_chat_list: Dictionary;
-  pub_chat_name: Dictionary;
-  chat_msg: Dictionary;
+(* [response] is the message that the server sends to the client *)
+type response = {
+  userid: int;
+  success: bool;
+  info: info
 }
 
 (* [input_of_string s] is the client_input record of [s] *)
 val input_of_string: string -> client_input
 
-(* [response_of_string s] is the response record of [s] *)
-val response_of_string: string -> response
-
-(* [string_of_input input] is the string of [input] *)
-val string_of_input: client_input -> string
-
-(* [string_of_response res] is the string of [res] *)
+(* [string_of_response res] is the string of [res], where string is the
+ * formatted string to send to the client (refer to documentation) *)
 val string_of_response: response -> string
 
 (* [main] is the main function that loops on [receive] and updates the local
