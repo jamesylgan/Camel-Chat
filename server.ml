@@ -18,14 +18,6 @@ type response = {
   info: info
 }
 
-type state = {
-  user_list: Dictionary;
-  priv_chat_list: Dictionary;
-  pub_chat_list: Dictionary;
-  pub_chat_name: Dictionary;
-  chat_msg: Dictionary;
-}
-
 let input_of_string s =
   failwith "unimplemented"
 

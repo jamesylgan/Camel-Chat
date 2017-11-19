@@ -1,25 +1,24 @@
 open data
 
-(* typically a string or string list depending on implementation *)
-type info
-
 (* [cmd] is the type of commands that can be called from the client *)
-type cmd = ADD_MSG | GET_HISTORY | GET_USERS | CREATE_PRIV_CHAT |
-           CREATE_PUB_CHAT | CREATE_USER | JOIN_CHAT | LEAVE_CHAT |
-           GET_PUB_CHAT
+type command =
+  | Create_user of string
+  | Send_msg of string
+  | Get_public_chats of unit
+  | Get_online_users of unit
+  | Get_curr_chats of unit
+  | Join_chat of string
+  | Change_chat of string
+  | Get_history of unit
+  | Create_private_chat of string
+  | Create_group_chat of string
+  | Leave_chat of string
+
 
 (* [client_input] is the message that the server receives from the client *)
 type client_input = {
   userid: int;
-  cmd: cmd;
-  info: info
-}
-
-(* [response] is the message that the server sends to the client *)
-type response = {
-  userid: int;
-  success: bool;
-  info: info
+  cmd: command
 }
 
 (* [state] is the current state of the server. The server maintains a 4
@@ -65,9 +64,8 @@ val parse: string -> command
  * the command, and finally invokes another function based on command.cmd *)
 val receive: unit -> state
 
-(* [join_chat st cmd] adds userid to user_list in [st], sends the last 10
- * messages of the chat that was joined in the response message. Returns the
- * updated state *)
+(* [join_chat st cmd] adds userid to user_list in [st]. Returns the
+ * updated state, joins pub chat *)
 val join_chat: state -> command -> state
 
 (* [leave_chat st cmd] removes the userid from [st] and sends a response based
