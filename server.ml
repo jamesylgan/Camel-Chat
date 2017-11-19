@@ -124,7 +124,24 @@ let get_public_chat st cmd =
 (* [parse str] passes the string [str] that was received from server and returns
  * stringified response to client *)
 let parse st str =
-  let input = input_of_string str in
+  let cmd = String.sub str 0 (String.index str ' ') in
+  (*wait, won't work unless commands have a space after #cmd*)
+  if String.get cmd 0 = '#' then
+  match cmd with
+    | "#history" -> failwith "unimplemented"
+    | "#chatwith" -> failwith "unimplemented"
+    | "#makechat" -> failwith "unimplemented"
+    | "#join" -> failwith "unimplemented"
+    | "#leave" -> failwith "unimplemented"
+    | "#users" -> failwith "unimplemented"
+    | "#mychats" -> failwith "unimplemented"
+    | "#pubchats" -> failwith "unimplemented"
+    | "#goto" -> failwith "unimplemented"
+    | "#quit" -> failwith "unimplemented"
+    | "#help" -> failwith "unimplemented"
+  else failwith "unimplemented" (*send message, or other non-# commands*)
+
+  (*  let input = input_of_string str in
   match input.cmd with
   | ADD_MSG -> add_msg st input
   | GET_HISTORY -> get_history st input
@@ -134,7 +151,7 @@ let parse st str =
   | CREATE_USER -> create_user st input
   | JOIN_CHAT -> join_chat st input
   | LEAVE_CHAT -> leave_chat st input
-  | GET_PUB_CHAT -> get_public_chat st input
+      | GET_PUB_CHAT -> get_public_chat st input*)
 
 let main =
   failwith "unimplemented"
