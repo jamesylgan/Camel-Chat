@@ -1,13 +1,10 @@
 open data
 
 (* typically an int or string or string list depending on implementation *)
-type info = string | string list | int
+type info
 
 (* [cmd] is the type of commands that can be called from the client *)
-type cmd = SEND_MSG | GET_HISTORY | GET_ONLINE_USERS | CREATE_PRIV_CHAT |
-           CREATE_PUB_CHAT | CREATE_USER | JOIN_CHAT | LEAVE_CHAT |
-           GET_PUB_CHAT
-
+type cmd
 
 (* [client_input] is the message that the server receives from the client *)
 type client_input = {

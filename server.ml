@@ -1,21 +1,29 @@
 open data
 
-type info = string | string list
+type info = string | string list | int 
 
-type cmd = ADD_MSG | GET_HISTORY | GET_USERS | CREATE_PRIV_CHAT |
-           CREATE_PUB_CHAT | CREATE_USER | JOIN_CHAT | LEAVE_CHAT |
-           GET_PUB_CHAT
+type command =
+  | Create_user of string
+  | Send_msg of string
+  | Get_public_chats of unit
+  | Get_online_users of unit
+  | Get_curr_chats of unit
+  | Join_chat of string
+  | Change_chat of string
+  | Get_history of unit
+  | Create_private_chat of string
+  | Create_group_chat of string
+  | Leave_chat of string
 
 type client_input = {
   userid: int;
-  cmd: cmd;
-  info: info
+  cmd: command;
 }
 
 type response = {
   userid: int;
   success: bool;
-  info: info
+  info: info;
 }
 
 let input_of_string s =
