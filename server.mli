@@ -3,13 +3,13 @@ open data
 (* typically an int or string or string list depending on implementation *)
 type info
 
-(* [cmd] is the type of commands that can be called from the client *)
-type cmd
+(* [command] is the type of commands that can be called from the client *)
+type command
 
 (* [client_input] is the message that the server receives from the client *)
 type client_input = {
   userid: int;
-  cmd: cmd;
+  cmd: command;
   info: info
 }
 
