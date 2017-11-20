@@ -10,7 +10,6 @@ type command
 type client_input = {
   userid: int;
   cmd: command;
-  info: info
 }
 
 (* [response] is the message that the server sends to the client *)
