@@ -1,5 +1,7 @@
 open data
 
+(* TODO: update the specifications.*)
+
 (* typically an int or string or string list depending on implementation *)
 type info
 
@@ -31,16 +33,16 @@ val string_of_response: response -> string
 val main: unit
 
 (* [parse str] passes the string [str] that was received from server and returns
- * the corresponding command type *)
-val parse: string -> command
+ * stringified response to client *)
+val parse: string -> string
 
 (* [receive] receives message from the server connection, invokes parse to get
  * the command, and finally invokes another function based on command.cmd *)
 val receive: unit -> state
 
-(* [join_chat st cmd] adds userid to user_list in [st]. Returns the
- * updated state, joins pub chat *)
-val join_chat: state -> command -> state
+(* [join_chat st cmd] adds userid to pub_chat_list in [st]. Returns the
+ * response of the server. *)
+val join_chat: state -> command -> response
 
 (* [leave_chat st cmd] removes the userid from [st] and sends a response based
  * on the success or failure of the removal. If the chat is not mapped to any
@@ -48,16 +50,16 @@ val join_chat: state -> command -> state
  * or priv_chat_list depending on the type of chat. Sends a response to the
  * client and returns the updated state.
  *)
-val leave_chat: state -> command -> state
+val leave_chat: state -> command -> response
 
 (* [create_user st cmd] initializes the username with a userid and adds the new
  * userid to user_list in [st]. Sends a response to the client and returns the
  * updated state. *)
-val create_user: state -> command -> state
+val create_user: state -> command -> response
 
 (* [remove_user st cmd] removes the user from user_list in [st]. Sends a
  * response to the client and returns the updated state. *)
-val remove_user: state -> command -> state
+val remove_user: state -> command -> response
 
 (* [send rsp] sends the response to the server through the connection. *)
 val send: response -> unit
@@ -78,23 +80,23 @@ val get_username: state -> int -> string
 
 (* [add_msg st cmd] adds a message to chat_msg in [st]. Sends a response to the
  * client and returns the updated state. *)
-val add_msg: state -> command -> state
+val add_msg: state -> command -> response
 
 (* [get_history st cmd] gets the last 10 messages from the chat requested for in
  * [cmd], and sends a response to the client with the chat history. Returns the
  * same state. *)
-val get_history: state -> command -> state
+val get_history: state -> command -> response
 
 (* [create_private_chat st cmd] initializes a chatid for the chat and adds it
  * to the priv_chat_list in [st]. Sends a response to the client and returns the
  * updated state. *)
-val create_private_chat: state -> command -> state
+val create_private_chat: state -> command -> response
 
 (* [create_pub_chat st cmd] initializes a chatid for the chat and adds it
  * to the pub_chat_list in [st]. Sends a response to the client and returns the
  * updated state. *)
-val create_pub_chat: state -> command -> state
+val create_pub_chat: state -> command -> response
 
 (* [get_public_chat st cmd] gets the pub_chat_list from [st] and returns the
  * list in the response to the client. Returns the same state. *)
-val get_public_chat: state -> command -> state
+val get_public_chat: state -> command -> response

@@ -1,19 +1,18 @@
 open data
 
-type info = string | string list | int 
+type info = string | string list | int
 
 type command =
-  | Create_user of string
-  | Send_msg of string
-  | Get_public_chats of unit
-  | Get_online_users of unit
-  | Get_curr_chats of unit
-  | Join_chat of string
-  | Change_chat of string
-  | Get_history of unit
-  | Create_private_chat of string
-  | Create_group_chat of string
-  | Leave_chat of string
+  | Create_user of string (* username *)
+  | Send_msg of (int*string) (* chatid, msg*)
+  | Get_public_chats
+  | Get_online_users
+  | Get_curr_chats
+  | Join_chat of string (* chatname*)
+  | Get_history of int (* chatid *)
+  | Create_priv_chat of string (* username of other user *)
+  | Create_pub_chat of string (* chatname *)
+  | Leave_chat of string (* chatname *)
 
 type client_input = {
   userid: int;
@@ -58,7 +57,7 @@ let leave_chat st cmd =
 (* [create_user st cmd] initializes the username with a userid and adds the new
  * userid to user_list in [st]. Sends a response to the client and returns the
  * updated state. *)
-let create_user st cmd =
+let create_user st s =
   failwith "unimplemented"
 
 (* [remove_user st cmd] removes the user from user_list in [st]. Sends a
@@ -120,6 +119,18 @@ let get_public_chat st cmd =
 let parse st str =
   let input = input_of_string str in
   match input.cmd with
+  | Create_user s -> create_user s
+  | Send_msg tup -> add_msg
+  | Get_public_chats of unit
+  | Get_online_users of unit
+  | Get_curr_chats of unit
+  | Join_chat of string
+  | Change_chat of string
+  | Get_history of unit
+  | Create_private_chat of string
+  | Create_group_chat of string
+  | Leave_chat of string
+
   | ADD_MSG -> add_msg st input
   | GET_HISTORY -> get_history st input
   | GET_USERS -> get_users st input
