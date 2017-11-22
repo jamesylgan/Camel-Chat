@@ -16,5 +16,5 @@ module ListDict = struct
 
   let insert k v d = (k, v) :: (if List.mem_assoc k d then remove k d else d)
 
-  let get k d = List.assoc
+  let get = List.assoc
 end

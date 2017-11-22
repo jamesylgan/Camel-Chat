@@ -21,3 +21,5 @@ module type Dictionary = sig
   val remove : 'k -> ('k, 'v) t -> ('k, 'v) t
 
 end
+
+module ListDict : Dictionary
