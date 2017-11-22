@@ -1,4 +1,4 @@
-open data
+
 (* [state] is the current state of the server. The server maintains a 4
  * dictionaries:
    - curr_conns maps uid to the (Reader, Writer) object of the connection
@@ -11,14 +11,16 @@ open data
    - chat_msg maps the chatid to a list of messages that was sent in the chat
 *)
 (* NOTE: dictionaries should be somehow changed to hash maps? *)
+open Data
 type state = {
-  curr_conns: Dictionary;
-  user_list: Dictionary;
-  priv_chat_list: Dictionary;
-  pub_chat_list: Dictionary;
-  pub_chat_names: Dictionary;
-  chat_msg: Dictionary;
+  curr_conns: (int, int) ListDict.t;
+  user_list: (int, int) ListDict.t;
+  priv_chat_list: (int, int) ListDict.t;
+  pub_chat_list:(int, int) ListDict.t;
+  pub_chat_names: (int, int) ListDict.t;
+  chat_msg: (int, int) ListDict.t;
 }
+
 
 (* [init_state] initializes a blank state with empty dictionaries *)
 val init_state: unit -> state
@@ -30,10 +32,10 @@ val get_chats_of_uid: state -> int -> int list
 (* [get_conns_of_chat st uid chatid] gets all uids (that are not equal to [uid])
  * and are in st.pub_chat_list  or st.priv_chat_list and then gets the (r,w)
  * tuple associated with the uids as listed in st.curr_conns *)
-val get_conns_of_chat: state -> int -> (Async.Reader * Async.Writer) list
+val get_conns_of_chat: state -> int -> (Async.Reader.t * Async.Writer.t) list
 
 (* [get_priv_chats st] is st.priv_chat_lists *)
-val get_priv_chats: state -> Dictionary
+val get_priv_chats: state -> (int, int) ListDict.t
 
 (* [get_online_users st] is the string list of all online users *)
 val get_online_users: state -> string list
@@ -55,7 +57,7 @@ val add_msg: state -> int -> (int * string) -> state
 val add_user: state -> int -> string -> state
 
 (* [add_conn st uid (r,w)] adds (r,w) to st.curr_conns *)
-val add_conn: state -> int -> (Async.Reader * Async.Writer) -> state
+val add_conn: state -> int -> (Async.Reader.t * Async.Writer.t) -> state
 
 (* [add_pub_chat uid chatid chatname] updates st.pub_chat_list with [uid],
  * and updates st.chat_names with [chatname]. [chatname] is a tuple  *)
