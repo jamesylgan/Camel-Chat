@@ -22,4 +22,4 @@ module type Dictionary = sig
 
 end
 
-module ListDict : Dictionary
+module ListDict : Dictionary with type ('k, 'v) t = ('k * 'v) list
