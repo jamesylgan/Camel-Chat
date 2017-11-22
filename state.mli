@@ -1,41 +1,21 @@
-
-(* [state] is the current state of the server. The server maintains a 4
- * dictionaries:
-   - curr_conns maps uid to the (Reader, Writer) object of the connection
-   - user_list maps userid to usernames
-   - priv_chat_list maps each private chatid to a list of (userid, userid) tuple
-   - pub_chat_list maps each public chatid to a list of userids
-   - chat_msg maps each chatid to a (int * string) list (ie userid, messages of
-     the chat)
-   - pub_chat_names maps the name of a public chat to its chatid
-   - chat_msg maps the chatid to a list of messages that was sent in the chat
-*)
-(* NOTE: dictionaries should be somehow changed to hash maps? *)
 open Data
-type state = {
-  curr_conns: (int, int) ListDict.t;
-  user_list: (int, int) ListDict.t;
-  priv_chat_list: (int, int) ListDict.t;
-  pub_chat_list:(int, int) ListDict.t;
-  pub_chat_names: (int, int) ListDict.t;
-  chat_msg: (int, int) ListDict.t;
-}
 
+type state
 
 (* [init_state] initializes a blank state with empty dictionaries *)
 val init_state: unit -> state
 
-(* [get_chats_of_uid uid] is the list of chatids that the uid is in (both)
+(* [get_chats_of_uid st uid] is the list of chatids that the uid is in (both)
  * public and private chats *)
 val get_chats_of_uid: state -> int -> int list
 
-(* [get_conns_of_chat st uid chatid] gets all uids (that are not equal to [uid])
+(* [get_conns_of_chat st uid] gets all uids (that are not equal to [uid])
  * and are in st.pub_chat_list  or st.priv_chat_list and then gets the (r,w)
  * tuple associated with the uids as listed in st.curr_conns *)
 val get_conns_of_chat: state -> int -> (Async.Reader.t * Async.Writer.t) list
 
 (* [get_priv_chats st] is st.priv_chat_lists *)
-val get_priv_chats: state -> (int, int) ListDict.t
+val get_priv_chats: state -> (int, int list) ListDict.t
 
 (* [get_online_users st] is the string list of all online users *)
 val get_online_users: state -> string list
@@ -43,9 +23,10 @@ val get_online_users: state -> string list
 (* [get_pub_chat_name st] is the list of all public chat names *)
 val get_pub_chats: state -> string list
 
-(* [get_users_of_chat] gets the list of users of [chatid] in st.pub_chat_list
- * or st.priv_chat_list *)
-val get_users_of_chat: state -> int -> int list
+(* [get_users_of_chat st chatid] gets the list of users of [chatid] in
+ * st.pub_chat_list or st.priv_chat_list. Raises Not_found if [chatid] is not
+ * a current chat id. *)
+val get_users_of_chat : state -> int -> int list
 
 (* get the last 10 chat messages in the chat *)
 val get_history: state -> int -> (int * string) list
