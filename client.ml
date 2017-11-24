@@ -4,12 +4,14 @@ type info =
   | IGet_public_chats of string list
   | IGet_online_users of string list
   | IGet_curr_chats of string list
+      (*TODO: This is handled client-side, should it really be in info?*)
   | IJoin_chat of unit
   | IChange_chat of unit
   | IGet_history of string list
   | ICreate_priv_chat of unit
   | ICreate_pub_chat of unit
   | ILeave_chat of unit
+  | Err_msg of string
 
 type command =
   | Create_user of string
@@ -80,13 +82,96 @@ let parse_send s st =
 
 (* TODO: Yo James, would you mind work on this?
    [parse_receive] takes in [s], a server repsonse in string, and returns
-   a [server_response]. *)
-let parse_receive s = failwith "Unimplemented"
+   a [server_response].
+
+   type server_response = {
+     r_userid: int;
+     success : bool;
+     info : info;
+   }
+
+   r_userid is -2 if no userid was returned in response, -1 if response was failure
+*)
+let receive s =
+  let sf_response =
+  match String.get s 0 with
+    | 's' -> true
+    | 'f' -> false
+    | _ -> failwith "Invalid server response: s/f" in
+  (* This part handles failures *)
+  if sf_response = false then
+    let len_of_uid =
+      String.sub s 6 ((String.index_from s 6 ':')-6)
+      |> int_of_string in
+    let first_data =
+      String.sub s ((String.index_from s 6 ':') + 1) len_of_uid in
+    {
+      r_userid = -1;
+      success = sf_response;
+      info = Err_msg (first_data)
+    }
+    (* This part handles successes *)
+  else let cmd_id_response =
+    String.get s 3 in
+  let len_of_uid =
+    String.sub s 6 ((String.index_from s 6 ':')-6)
+    |> int_of_string in
+  let first_data =
+    String.sub s ((String.index_from s 6 ':') + 1) len_of_uid in
+  let response_uid =
+    first_data
+    |> int_of_string in
+  let response_info =
+    (*this finds the chat_id for functions which have the chatid last.
+      may not be helpful
+
+      let find_chatid_as_last =
+      let identifier_index = String.rindex s ':' + 1 in
+      String.sub s (identifier_index) ((String.length s) - identifier_index) in*)
+    match cmd_id_response with
+    | 'a' -> ISend_msg ()
+    | 'b' -> failwith "unimplemented"
+    | 'c' -> let rec username_list str un_left =
+               if un_left = 0 then []
+               else let index_of_username = (String.rindex str ':') + 1 in
+                 let len_of_username = String.length str - index_of_username in
+                 let new_str = String.sub str 0 (index_of_username-1) in
+                 String.sub str index_of_username len_of_username
+                    :: (username_list new_str (un_left-1)) in
+      IGet_online_users (username_list s len_of_uid)
+    | 'd' -> ICreate_priv_chat ()
+    | 'e' -> ICreate_pub_chat ()
+    | 'f' -> ICreate_user ()
+    | 'g' -> IJoin_chat ()
+    | 'h' -> ILeave_chat ()
+    | 'i' -> let num_pubchats = 0 (*TODO: do this*)in
+      let rec chat_list str un_left =
+               if un_left = 0 then []
+               else let index_of_chatname = (String.rindex str ':') + 1 in
+                 let len_of_chatname = String.length str - index_of_chatname in
+                 let new_str = String.sub str 0 (index_of_chatname-1) in
+                 String.sub str index_of_chatname len_of_chatname
+                 :: (chat_list new_str (un_left-1)) in
+      IGet_public_chats (chat_list s num_pubchats)
+    | _ -> failwith "Invalid server response command id" in
+  if sf_response = true && (cmd_id_response <> 'c') then
+  {
+    r_userid = response_uid;
+    success = sf_response;
+    info = response_info
+  }
+  else if sf_response = true && (cmd_id_response == 'c') then
+    {
+      r_userid = -2;
+      success = sf_response;
+      info = response_info
+    }
+  (*might need to add a try-catch depending on client-server stuff*)
+  else failwith "Server response error"
 
 let send output = ()
 
-let receive () = failwith "Unimplemented"
-
+let receive = failwith "unimplemented if we even need it"
     (*
 let rec chat st =
   match parse (read_line ()) with

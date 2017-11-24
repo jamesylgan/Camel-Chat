@@ -103,9 +103,12 @@ val create_group_chat : state -> string -> client_output
  * the user requests to leave a chat named [s]. *)
 val leave_chat : state -> string -> client_output
 
+(* [receive] takes the string received from server and returns the
+ * [server_response] containing that data. *)
+val receive_parse : string -> server_response
+
 (* [send c] sends [c] of type [client_output] to the server. *)
 val send : client_output -> unit
 
-(* [receive] receives data from the server and returns the [server_response]
- * containing that data. *)
-val receive : unit -> server_response
+(* [receive] receives data from the server and returns it as a string *)
+val receive : unit -> string
