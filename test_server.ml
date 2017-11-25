@@ -42,12 +42,12 @@ let handle_stdin input =
 
 let rec read_cmdline () =
   let stdin : Reader.t = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= fun res -> return
+  Reader.read_line stdin >>= fun res -> ignore(return
     begin
       match res with
       | `Ok str -> handle_stdin str
       | `Eof ->  ()
-    end;
+    end);
   ignore (read_cmdline());
   Deferred.never ()
 

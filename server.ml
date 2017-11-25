@@ -39,7 +39,7 @@ type response = {
 }
 
 let input_of_string s =
-  {userid = -1; cmd = Create_user s}
+  {userid = -1; cmd = Create_user "name"}
 
 let string_of_response res =
   failwith "unimplemented"
@@ -83,12 +83,8 @@ let create_user username =
 
 (* [remove_user st cmd] removes the user from user_list in [st]. Sends a
  * response to the client and returns the updated state. *)
-let remove_user st cmd =
-  failwith "unimplemented"
-
-(* [send rsp] sends the response to the server through the connection. *)
-let send rsp =
-  failwith "unimplemented"
+let delete_user uid =
+  remove_user !st uid
 
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all
@@ -100,17 +96,18 @@ let handle_disconnect st uid =
 
 (* [broadcast_to_chat st uid] is a helper for [handle_disconnect] to send
  * messages to all chats that the disconnected [uid] was in. *)
-let broadcast_to_chat st uid =
-  failwith "unimplemented"
-
-(* [get_username st int] is the username associated with [uid] *)
-let get_username st uid =
-  failwith "unimplemented"
+let broadcast_to_chat uid (chatid, msg) =
+  let rwLst = get_conns_of_chat !st uid chatid in
+  List.iter rwLst
+    (fun (_,w) ->
+       if Writer.is_open w
+       then Writer.write w (string_of_int uid ^ " says: " ^ msg)); ()
 
 (* [add_msg st cmd] adds a message to chat_msg in [st]. Sends a response to the
  * client and returns the updated state. *)
 let send_msg uid tuple =
   try st := add_msg !st uid tuple;
+    ignore (broadcast_to_chat uid tuple);
     {userid = uid; cmd = "a"; success = true; info = Nil}
   with UpdateError err ->
     {userid = uid; cmd = "a"; success = false; info = String err}
@@ -128,7 +125,7 @@ let get_history uid chatid =
  * to the priv_chat_list in [st]. Sends a response to the client and returns the
  * updated state. *)
 let create_private_chat uid username =
-  let uid2 = get_username !st username in
+  let uid2 = get_uid !st username in
   let new_chatid = next_chatid () in
   try st := add_priv_chat !st uid uid2 new_chatid;
     {userid = uid; cmd = "d"; success = true; info = Int new_chatid}
@@ -188,12 +185,12 @@ let handle_stdin input =
 
 let rec read_cmdline () =
   let stdin : Reader.t = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= fun res -> return
+  Reader.read_line stdin >>= fun res -> ignore(return
     begin
       match res with
       | `Ok str -> handle_stdin str
       | `Eof ->  ()
-    end;
+    end);
   ignore (read_cmdline());
   Deferred.never ()
 

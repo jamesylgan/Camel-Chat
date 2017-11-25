@@ -49,7 +49,7 @@ val create_user: string -> response
 
 (* [remove_user st cmd] removes the user from user_list in [st]. Sends a
  * response to the client and returns the updated state. *)
-val remove_user: state -> command -> response
+val delete_user: state -> command -> response
 
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all
@@ -60,25 +60,22 @@ val handle_disconnect: state -> int -> state
 
 (* [broadcast_to_chat st uid] is a helper for [handle_disconnect] to send
  * messages to all chats that the disconnected [uid] was in. *)
-val broadcast_to_chat: state -> int -> unit
+val broadcast_to_chat: int -> (int * string) -> unit
 
 (* [get_users uid] is the *)
 val get_users: int -> response
-
-(* [get_username st uid] is the username associated with [uid] *)
-val get_username: state -> int -> string
 
 (* [get_history st cmd] gets the last 10 messages from the chat requested for in
  * [cmd], and sends a response to the client with the chat history. Returns the
  * same state. *)
 val get_history: int -> int -> response
 
-(* [create_private_chat st cmd] initializes a chatid for the chat and adds it
+(* [create_private_chat uid username] initializes a chatid for the chat and adds it
  * to the priv_chat_list in [st]. Sends a response to the client and returns the
  * updated state. *)
 val create_private_chat: int -> string -> response
 
-(* [create_pub_chat st cmd] initializes a chatid for the chat and adds it
+(* [create_pub_chat uid chatname] initializes a chatid for the chat and adds it
  * to the pub_chat_list in [st]. Sends a response to the client and returns the
  * updated state. *)
 val create_pub_chat: int -> string -> response
@@ -86,6 +83,5 @@ val create_pub_chat: int -> string -> response
 (* [get_public_chat st cmd] gets the pub_chat_list from [st] and returns the
  * list in the response to the client. Returns the same state. *)
 val get_public_chat: int -> response
-
 
 val send_msg: int -> (int * string) -> response

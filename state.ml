@@ -28,7 +28,7 @@ type state = {
   priv_chat_list: (cid, uid list) LD.t;
   pub_chat_list:(cid, uid list) LD.t;
   pub_chat_names: (cname, cid) LD.t;
-  chat_msg: (cid, string list) LD.t;
+  chat_msg: (cid, (int*string) list) LD.t;
 }
 
 let init_state () = {curr_conns = LD.empty;
@@ -49,7 +49,7 @@ let get_chats_of_uid st uid =
                        else get_cids id t acc in
   List.rev_append (get_cids uid privs []) (get_cids uid pubs [] |> List.rev)
 
-let get_conns_of_chat = failwith "Unimplemented"
+let get_conns_of_chat st uid chatid = failwith "Unimplemented"
 
 let get_priv_chats st = st.priv_chat_list
 
@@ -69,22 +69,25 @@ let get_history st cid =
 
 let add_msg st uid (cid, msg) =
   let msgs = List.assoc cid st.chat_msg in
+  print_string "removing \n";
   failwith "Unimplemented"
 
-let add_user = failwith "Unimplemented"
+let add_user st uid username = failwith "Unimplemented"
 
-let add_conn = failwith "Unimplemented"
+let add_conn st uid = failwith "Unimplemented"
 
-let add_pub_chat = failwith "Unimplemented"
+let add_pub_chat st uid chatid chatname = failwith "Unimplemented"
 
-let add_priv_chat = failwith "Unimplemented"
+let add_priv_chat st uid1 uid2 chatid= failwith "Unimplemented"
 
-let add_user_to_pub_chat = failwith "Unimplemented"
+let add_user_to_pub_chat st uid chatid = failwith "Unimplemented"
 
-let get_username = failwith "Unimplemented"
+let get_username st uid = failwith "Unimplemented"
 
-let get_chatid = failwith "Unimplemented"
+let get_chatid st chatname = failwith "Unimplemented"
 
-let remove_user = failwith "Unimplemented"
+let remove_user st uid = failwith "Unimplemented"
 
 let remove_from_chat st uid chatid = failwith "Unimplemented"
+
+let get_uid st username = failwith "Unimplemented"
