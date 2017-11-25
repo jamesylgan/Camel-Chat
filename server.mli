@@ -1,8 +1,6 @@
 open Data
 open State
 
-(* TODO: update the specifications.*)
-
 (* typically an int or string or string list depending on implementation *)
 type info
 
@@ -49,7 +47,7 @@ val create_user: string -> response
 
 (* [delete_user uid] removes the user from user_list in [st]. Sends a
  * response to the client and returns the updated state. *)
-val delete_user: int -> response
+val delete_user: int -> unit
 
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all

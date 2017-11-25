@@ -73,7 +73,7 @@ let create_user username =
     {userid = -1; cmd = "f"; success = false; info = String err}
 
 let delete_user uid =
-  remove_user !st uid
+  st := remove_user !st uid
 
 let handle_disconnect st uid =
   failwith "unimplemented"
