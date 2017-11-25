@@ -130,6 +130,7 @@ let receive s =
       String.sub s (identifier_index) ((String.length s) - identifier_index) in*)
     match cmd_id_response with
     | 'a' -> ISend_msg ()
+               (*TODO: GET_HISTORY. will be the most complicated.*)
     | 'b' -> failwith "unimplemented"
     | 'c' -> let rec username_list str un_left =
                if un_left = 0 then []
@@ -144,7 +145,17 @@ let receive s =
     | 'f' -> ICreate_user ()
     | 'g' -> IJoin_chat ()
     | 'h' -> ILeave_chat ()
-    | 'i' -> let num_pubchats = 0 (*TODO: do this*)in
+    | 'i' -> (*Note: edge case of ':' not found will not happen because
+               by default there is a lobby public chat - same for 'c' -> the
+               client will always be at least 1 user online.
+              TODO: Write specs explaining that?*)
+      let num_pubchats =
+               let num_loc =
+                 ((String.index_from s ((String.index s ',') + 1) ',') + 2) in
+               String.sub s
+                  num_loc
+                  ((String.index_from s num_loc ':')-num_loc)
+               |> int_of_string in
       let rec chat_list str un_left =
                if un_left = 0 then []
                else let index_of_chatname = (String.rindex str ':') + 1 in
@@ -171,7 +182,7 @@ let receive s =
 
 let send output = ()
 
-let receive = failwith "unimplemented if we even need it"
+let receive = failwith "unimplemented, not sure how it will work"
     (*
 let rec chat st =
   match parse (read_line ()) with
