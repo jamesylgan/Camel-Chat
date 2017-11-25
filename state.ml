@@ -6,6 +6,8 @@ type uid = int
 type uname = string
 type cname = string
 
+exception UpdateError of string
+
 (* [state] is the current state of the server. The server maintains a 4
  * dictionaries:
    - curr_conns maps uid to the (Reader, Writer) object of the connection
@@ -65,7 +67,7 @@ let get_history st cid =
     | h::t -> f t (h::acc) (count-1) in
   f msgs [] 10
 
-let add_msg st cid (_, msg) =
+let add_msg st uid (cid, msg) =
   let msgs = List.assoc cid st.chat_msg in
   failwith "Unimplemented"
 
@@ -84,3 +86,5 @@ let get_username = failwith "Unimplemented"
 let get_chatid = failwith "Unimplemented"
 
 let remove_user = failwith "Unimplemented"
+
+let remove_from_chat st uid chatid = failwith "Unimplemented"

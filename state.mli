@@ -2,6 +2,8 @@ open Data
 
 type state
 
+exception UpdateError of string
+
 (* [init_state] initializes a blank state with empty dictionaries *)
 val init_state: unit -> state
 
@@ -31,10 +33,11 @@ val get_users_of_chat : state -> int -> int list
 (* get the last 10 chat messages in the chat *)
 val get_history: state -> int -> (int * string) list
 
-(* [add_msg st chatid (uid, msg)] adds the chat message to st.chat_msg  *)
+(* [add_msg st uid (chatid, msg)] adds the chat message to st.chat_msg  *)
 val add_msg: state -> int -> (int * string) -> state
 
-(* [add_user st uid username] adds [uid] to st.user_list with [username] *)
+(* [add_user st uid username] adds [uid] to st.user_list with [username]
+ * -raises: UpdateError when username already exists. *)
 val add_user: state -> int -> string -> state
 
 (* [add_conn st uid (r,w)] adds (r,w) to st.curr_conns *)
@@ -62,3 +65,6 @@ val get_chatid: state -> string -> int
 (* [remove_user st uid] removes [uid] from st.curr_conns, st.user_list, and both
  * chat lists *)
 val remove_user: state -> int -> state
+
+(* [remove_from_chat st uid chatid] removes [uid] from [chat] *)
+val remove_from_chat: state -> int -> int -> state
