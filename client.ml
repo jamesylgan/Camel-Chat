@@ -1,6 +1,15 @@
 type info =
-  | Str of string
-  | Str_lst of string list
+  | ICreate_user of unit
+  | ISend_msg of unit
+  | IGet_public_chats of string list
+  | IGet_online_users of string list
+  | IGet_curr_chats of string list
+  | IJoin_chat of unit
+  | IChange_chat of unit
+  | IGet_history of string list
+  | ICreate_priv_chat of unit
+  | ICreate_pub_chat of unit
+  | ILeave_chat of unit
 
 type command =
   | Create_user of string
@@ -11,83 +20,78 @@ type command =
   | Join_chat of string
   | Change_chat of string
   | Get_history of unit
-  | Create_private_chat of string
-  | Create_group_chat of string
+  | Create_priv_chat of string
+  | Create_pub_chat of string
   | Leave_chat of string
+  | Quit
 
 type state = {
   userid : int;
   curr_chatid : int;
-  chats : int list
+  chats : (string * int) list;
+  print: string;
 }
 
 type server_response = {
-  userid: int;
+  r_userid: int;
   success : bool;
   info : info;
 }
 
-type client_output = {
-  userid : int;
-  cmd: command;
-}
+let parse_send s st =
+  let open String in
+  let uid = ", " ^ (st.userid |> string_of_int |> length |> string_of_int)
+            ^ ":" ^ (st.userid |> string_of_int) in
+  let chatid = ", " ^ (st.curr_chatid |> string_of_int |> length |>
+                       string_of_int)
+               ^ ":" ^ (st.curr_chatid |> string_of_int) in
+  let open Str in
+  match s with
+  (* Does not include [Help], [Create_user], and [Quit] which are
+     managed in [View.ml]. *)
+  | "#history" -> "b" ^ uid ^ chatid
+  | "#users" -> "c" ^ uid
+  | "#mychats" -> "j" ^ uid
+  | "#pubchats" -> "i" ^ uid
+  | s -> begin
+      let priv_chat = regexp "#chatwith \\(.+\\)" in
+      let pub_chat = regexp "#makechat \\(.+\\)" in
+      let join_chat = regexp "#join \\(.+\\)" in
+      let leave_chat = regexp "#leave \\(.+\\)" in
+      let change_chat = regexp "#goto \\(.+\\)" in
+      if string_match priv_chat s 0
+      then "d" ^ uid ^ ", " ^ ((length s)-10 |> string_of_int) ^
+           ":" ^ ((length s)-10 |> sub s 10)
+      else if string_match pub_chat s 0
+      then "e" ^ uid ^ ", " ^ ((length s)-10 |> string_of_int) ^
+           ":" ^ ((length s)-10 |> sub s 10)
+      else if string_match join_chat s 0
+      then "g" ^ uid ^ ", " ^ ((length s)-6 |> string_of_int) ^
+           ":" ^ ((length s)-6 |> sub s 6)
+      else if string_match leave_chat s 0
+      then "h" ^ uid ^ ", " ^ ((length s)-7 |> string_of_int) ^
+           ":" ^ ((length s)-7 |> sub s 7)
+      else if string_match change_chat s 0
+      then "k" ^ uid ^ ", " ^ ((length s)-6 |> string_of_int) ^
+           ":" ^ ((length s)-6 |> sub s 6)
+      else "a" ^ uid ^ ", " ^ (s |> length |> string_of_int) ^
+           ":" ^ s ^ chatid
+    end
 
-let parse s = failwith "Unimplemented"
-
-let create_user s =
-  {
-    (* A dummy value for userid *)
-   userid = -11111111;
-   cmd = Create_user s;
-  }
-
-let send_msg (st: state) s =
-  {
-    userid = st.userid;
-    cmd = Send_msg s;
-  }
-
-let get_public_chats (st: state) () =
-  {
-    userid = st.userid;
-    cmd = Get_public_chats ();
-  }
-
-let get_online_users (st: state) () =
-  {
-    userid = st.userid;
-    cmd = Get_online_users ();
-  }
-
-let get_curr_chats (st: state) () =
-  {
-    userid = st.userid;
-    cmd = Get_curr_chats ();
-  }
-
-let join_chat st s = failwith "Unimplemented"
-
-let change_chat st s = failwith "Unimplemented"
-
-let get_history st () = failwith "Unimplemented"
-
-let create_private_chat st s  = failwith "Unimplemented"
-
-let create_group_chat st s = failwith "Unimplemented"
-
-let leave_chat st s = failwith "Unimplemented"
+(* TODO: Yo James, would you mind work on this?
+   [parse_receive] takes in [s], a server repsonse in string, and returns
+   a [server_response]. *)
+let parse_receive s = failwith "Unimplemented"
 
 let send output = ()
 
 let receive () = failwith "Unimplemented"
 
+    (*
 let rec chat st =
-  (* TODO: Should we have some kind of quit command that quits like
-     match parse (read_line ()) with
-     | Quit _ -> ()
-     | c -> rest of the function
-     or are we just use the global lobby for this ?
-  *)
+  match parse (read_line ()) with
+     | End -> ()
+     | c ->
   let get_output st = function
     | Create_user s -> create_user s
     | Send_msg s -> send_msg st s
@@ -97,10 +101,11 @@ let rec chat st =
     | Join_chat s -> join_chat st s
     | Change_chat s -> change_chat st s
     | Get_history () -> get_history st ()
-    | Create_private_chat s -> create_private_chat st s
-    | Create_group_chat s -> create_group_chat st s
-    | Leave_chat s -> leave_chat st s in
-  send (get_output st (parse (read_line ())));
+    | Create_priv_chat s -> create_private_chat st s
+    | Create_pub_chat s -> create_group_chat st s
+    | Leave_chat s -> leave_chat st s
+    | End -> failwith "should not happen" in
+  send (get_output st c);
   let r = receive () in
   (* TODO: Should insert print function here based on [info]*)
   (* TODO: Probably need an [update] function for these. *)
@@ -126,3 +131,4 @@ let main () =
       curr_chatid = 0;
       chats = [];} in
   chat init_st
+*)
