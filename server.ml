@@ -50,9 +50,6 @@ let get_users uid =
   with UpdateError err ->
     {userid = uid; cmd = "c"; success = false; info = String err}
 
-(* [join_chat st cmd] adds userid to user_list in [st], sends the last 10
- * messages of the chat that was joined in the response message. Returns the
- * updated state *)
 let join_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := add_user_to_pub_chat !st uid chatid;
@@ -60,12 +57,6 @@ let join_chat uid chatname =
   with UpdateError err ->
     {userid = uid; cmd = "g"; success = false; info = String err}
 
-(* [leave_chat st cmd] removes the userid from [st] and sends a response based
- * on the success or failure of the removal. If the chat is not mapped to any
- * userid in the updated state, then the chat is removed from the pub_chat_list
- * or priv_chat_list depending on the type of chat. Sends a response to the
- * client and returns the updated state.
-*)
 let leave_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := remove_from_chat !st uid chatid;
@@ -81,30 +72,20 @@ let create_user username =
     let _ = prev_uid () in
     {userid = -1; cmd = "f"; success = false; info = String err}
 
-(* [remove_user st cmd] removes the user from user_list in [st]. Sends a
- * response to the client and returns the updated state. *)
 let delete_user uid =
   remove_user !st uid
 
-(* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
- * server. It removes the disconnected [uid] from user_list and from all
- * chats that the user is in. Broadcasts message to all chats that the user was
- * in: "user _ has left". Sends a response to the client and returns the updated
- * state. *)
 let handle_disconnect st uid =
   failwith "unimplemented"
 
-(* [broadcast_to_chat st uid] is a helper for [handle_disconnect] to send
- * messages to all chats that the disconnected [uid] was in. *)
 let broadcast_to_chat uid (chatid, msg) =
+  let username = get_username !st uid in
   let rwLst = get_conns_of_chat !st uid chatid in
   List.iter rwLst
     (fun (_,w) ->
        if Writer.is_open w
-       then Writer.write w (string_of_int uid ^ " says: " ^ msg)); ()
+       then Writer.write w (username ^ " says: " ^ msg)); ()
 
-(* [add_msg st cmd] adds a message to chat_msg in [st]. Sends a response to the
- * client and returns the updated state. *)
 let send_msg uid tuple =
   try st := add_msg !st uid tuple;
     ignore (broadcast_to_chat uid tuple);
@@ -112,18 +93,12 @@ let send_msg uid tuple =
   with UpdateError err ->
     {userid = uid; cmd = "a"; success = false; info = String err}
 
-(* [get_history st cmd] gets the last 10 messages from the chat requested for in
- * [cmd], and sends a response to the client with the chat history. Returns the
- * same state. *)
 let get_history uid chatid =
   try let history = get_history !st chatid in
     {userid = uid; cmd = "b"; success = true; info = ISList history}
   with UpdateError err ->
     {userid = uid; cmd = "b"; success = false; info = String err}
 
-(* [create_private_chat st cmd] initializes a chatid for the chat and adds it
- * to the priv_chat_list in [st]. Sends a response to the client and returns the
- * updated state. *)
 let create_private_chat uid username =
   let uid2 = get_uid !st username in
   let new_chatid = next_chatid () in
@@ -133,9 +108,6 @@ let create_private_chat uid username =
     let _ = prev_chatid () in
     {userid = uid; cmd = "d"; success = false; info = String err}
 
-(* [create_pub_chat st cmd] initializes a chatid for the chat and adds it
- * to the pub_chat_list in [st]. Sends a response to the client and returns the
- * updated state. *)
 let create_pub_chat uid chatname =
   let new_chatid = next_chatid () in
   try st := add_pub_chat !st uid new_chatid chatname;
@@ -144,16 +116,12 @@ let create_pub_chat uid chatname =
     let _ = prev_chatid () in
     {userid = uid; cmd = "e"; success = false; info = String err}
 
-(* [get_public_chat st cmd] gets the pub_chat_list from [st] and returns the
- * list in the response to the client. Returns the same state. *)
 let get_public_chat uid =
   try let pub_chats = get_pub_chats !st in
     {userid = uid; cmd = "i"; success = true; info = SList pub_chats}
   with UpdateError err ->
   {userid = uid; cmd = "i"; success = false; info = String err}
 
-(* [parse str] passes the string [str] that was received from server and returns
- * stringified response to client *)
 let parse str =
   let input = input_of_string str in
   let res = match input.cmd with

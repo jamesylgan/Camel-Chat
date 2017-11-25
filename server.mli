@@ -30,26 +30,26 @@ val main: unit -> unit
  * stringified response to client *)
 val parse: string -> string
 
-(* [join_chat st cmd] adds userid to pub_chat_list in [st]. Returns the
- * response of the server. *)
+(* [join_chat uid chatname cmd] adds userid to pub_chat_list in [st]. Returns
+ * the response of the server. *)
 val join_chat: int -> string -> response
 
-(* [leave_chat st cmd] removes the userid from [st] and sends a response based
- * on the success or failure of the removal. If the chat is not mapped to any
- * userid in the updated state, then the chat is removed from the pub_chat_list
- * or priv_chat_list depending on the type of chat. Sends a response to the
- * client and returns the updated state.
+(* [leave_chat uid chatname] removes the userid from [st] and sends a response
+ * based on the success or failure of the removal. If the chat is not mapped to
+ * any userid in the updated state, then the chat is removed from the
+ * pub_chat_list or priv_chat_list depending on the type of chat. Sends a
+ * response to the client and returns the updated state.
  *)
 val leave_chat: int -> string -> response
 
-(* [create_user st cmd] initializes the username with a userid and adds the new
+(* [create_user username] initializes the username with a userid and adds the new
  * userid to user_list in [st]. Sends a response to the client and returns the
  * updated state. *)
 val create_user: string -> response
 
-(* [remove_user st cmd] removes the user from user_list in [st]. Sends a
+(* [delete_user uid] removes the user from user_list in [st]. Sends a
  * response to the client and returns the updated state. *)
-val delete_user: state -> command -> response
+val delete_user: int -> response
 
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all
@@ -58,30 +58,30 @@ val delete_user: state -> command -> response
  * state. *)
 val handle_disconnect: state -> int -> state
 
-(* [broadcast_to_chat st uid] is a helper for [handle_disconnect] to send
- * messages to all chats that the disconnected [uid] was in. *)
+(* [broadcast_to_chat uid (chatid, msg)] is a helper for [handle_disconnect] to
+ * send messages to all chats that the disconnected [uid] was in. *)
 val broadcast_to_chat: int -> (int * string) -> unit
 
-(* [get_users uid] is the *)
+(* [get_users uid] is the username of the uid *)
 val get_users: int -> response
 
-(* [get_history st cmd] gets the last 10 messages from the chat requested for in
- * [cmd], and sends a response to the client with the chat history. Returns the
- * same state. *)
+(* [get_history uid chatid] gets the last 10 messages from chatid, and returns a
+ * response to the client with the chat history. *)
 val get_history: int -> int -> response
 
-(* [create_private_chat uid username] initializes a chatid for the chat and adds it
- * to the priv_chat_list in [st]. Sends a response to the client and returns the
- * updated state. *)
+(* [create_private_chat uid username] initializes a chatid for the chat and adds
+ * it to the priv_chat_list in [st]. Returns a response with success/failure. *)
 val create_private_chat: int -> string -> response
 
 (* [create_pub_chat uid chatname] initializes a chatid for the chat and adds it
- * to the pub_chat_list in [st]. Sends a response to the client and returns the
- * updated state. *)
+ * to the pub_chat_list in [st]. Returns a response with success/failure. *)
 val create_pub_chat: int -> string -> response
 
-(* [get_public_chat st cmd] gets the pub_chat_list from [st] and returns the
- * list in the response to the client. Returns the same state. *)
+(* [get_public_chat uid] gets the pub_chat_list from [st] and returns a response
+ * with the list in the response to the client. *)
 val get_public_chat: int -> response
 
+(* [send_msg uid (chatid, msg)] sends [msg] to all users in the [chatid]. Adds
+ * the tuple to the list of st.chat_msg and returns a response with success
+ * or failure. *)
 val send_msg: int -> (int * string) -> response
