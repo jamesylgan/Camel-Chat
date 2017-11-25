@@ -7,7 +7,7 @@ tclient:
 #eg make HOST="127.0.0.1" PORT=9999 tclient
 
 server:
-	ocamlbuild -use-ocamlfind server.byte && ./server.byte
+	ocamlbuild -use-ocamlfind server.byte && ./server.byte -port ${PORT}
 
 client:
 	ocamlbuild -use-ocamlfind client.byte && ./client.byte -ip ${IP} -port ${PORT}
