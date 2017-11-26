@@ -21,7 +21,7 @@ type command =
   | Get_curr_chats of unit
   | Join_chat of string
   | Change_chat of string
-  | Get_history of unit
+  | Get_history of int 
   | Create_priv_chat of string
   | Create_pub_chat of string
   | Leave_chat of string
