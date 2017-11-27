@@ -43,7 +43,7 @@ val add_user: state -> int -> string -> state
 (* [add_conn st uid (r,w)] adds (r,w) to st.curr_conns *)
 val add_conn: state -> int -> (Async.Reader.t * Async.Writer.t) -> state
 
-(* [add_pub_chat uid chatid chatname] updates st.pub_chat_list with [uid],
+(* [add_pub_chat st uid chatid chatname] updates st.pub_chat_list with [uid],
  * and updates st.chat_names with [chatname]. [chatname] is a tuple  *)
 val add_pub_chat: state -> int -> int -> string -> state
 
