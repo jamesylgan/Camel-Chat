@@ -72,11 +72,21 @@ let add_msg st uid (cid, msg) =
   print_string "removing \n";
   failwith "Unimplemented"
 
-let add_user st uid username = failwith "Unimplemented"
+let add_user st uid uname =
+  let open List in
+  let user_list' = (uid, uname) :: if st.user_list |> split |> snd |> mem uname
+                   then raise (UpdateError "Username taken")
+                   else st.user_list in
+  {st with user_list = user_list'}
 
-let add_conn st uid = failwith "Unimplemented"
+let add_conn st uid (r,w) =
+  let conns' = LD.insert uid (r,w) st.curr_conns in
+  {st with curr_conns = conns'}
 
-let add_pub_chat st uid chatid chatname = failwith "Unimplemented"
+let add_pub_chat st uid chatid chatname =
+  let chat_lst' = LD.insert chatid [uid] st.pub_chat_list in
+  let chat_names' = LD.insert chatname chatid st.pub_chat_names in
+  {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
 let add_priv_chat st uid1 uid2 chatid= failwith "Unimplemented"
 
