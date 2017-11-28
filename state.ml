@@ -88,16 +88,36 @@ let add_pub_chat st uid chatid chatname =
   let chat_names' = LD.insert chatname chatid st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
-let add_priv_chat st uid1 uid2 chatid= failwith "Unimplemented"
+let add_priv_chat st uid1 uid2 chatid=
+  let chat_lst' = LD.insert chatid [uid1; uid2] st.priv_chat_list in
+  {st with priv_chat_list = chat_lst'}
 
-let add_user_to_pub_chat st uid chatid = failwith "Unimplemented"
+let add_user_to_pub_chat st uid cid =
+  let user_lst = LD.get cid st.pub_chat_list in
+  let user_lst' = uid :: user_lst in
+  let chat_lst' = LD.insert cid user_lst' st.pub_chat_list in
+  {st with pub_chat_list = chat_lst'}
 
-let get_username st uid = failwith "Unimplemented"
+let get_username st uid = LD.get uid st.user_list
 
-let get_chatid st chatname = failwith "Unimplemented"
+let get_uid st uname =
+  let inv = Core.List.Assoc.inverse st.user_list in
+  List.assoc uname inv
 
-let remove_user st uid = failwith "Unimplemented"
+let get_chatid st chatname = LD.get chatname st.pub_chat_names
 
-let remove_from_chat st uid chatid = failwith "Unimplemented"
+let remove_user st uid =
+  let conns' = LD.remove uid st.curr_conns in
+  let user_lst' = LD.remove uid st.user_list in
+  let chat_rm lst = List.map (fun (cid, ulist) ->
+      (cid, List.filter (fun x -> x <> uid) ulist)) lst in
+  let priv_chat_lst' = chat_rm st.priv_chat_list in
+  let pub_chat_lst' = chat_rm st.pub_chat_list in
+  {st with curr_conns = conns'; user_list = user_lst';
+   priv_chat_list = priv_chat_lst'; pub_chat_list = pub_chat_lst'}
 
-let get_uid st username = failwith "Unimplemented"
+let remove_from_chat st uid chatid =
+  let users' = List.filter (fun x -> x <> uid) (get_users_of_chat st chatid) in
+  if List.mem_assoc chatid st.pub_chat_list
+  then {st with pub_chat_list = LD.insert chatid users' st.pub_chat_list}
+  else {st with priv_chat_list = LD.insert chatid users' st.priv_chat_list}
