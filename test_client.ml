@@ -2,15 +2,35 @@ open Core
 open Async
 open Unix
 
-let chat addr r w =
-  printf "> ";
+(* [handle_stdin str] forms the stringified client_input that the client sends
+ * to the sever from the command line input [str] *)
+let handle_stdin str =
+  str ^ "do something"
+
+(* [handle_resp str] takes [str] which is the stringified response from the
+ * server, parses it to update its state or prints if necessary. *)
+let handle_resp str =
+  print_endline (str ^"change from server"); ()
+
+let chat _ r w =
   let stdin = Lazy.force Reader.stdin in
-  let stdout = Lazy.force Writer.stdout in
-  (* We transfer stdin over our TCP connection. *)
-  don't_wait_for (Reader.transfer stdin (Writer.pipe w));
-  (* And, we simultaneously transfer the inbound TPC traffic to to stdout. *)
-  don't_wait_for (Reader.transfer r (Writer.pipe stdout));
-  Deferred.never ()
+  let rec loop r w =
+    printf "> ";
+    (* Step one: read a line from the user. *)
+    Reader.read_line stdin >>= function
+    | `Eof -> (printf "Error reading stdin\n"; return ())
+    | `Ok line ->
+      (* Step two: send it to the server. *)
+      Writer.write_line w (handle_stdin line);
+      (* Step three: read back the echoed string. *)
+      read r;
+
+and read r =
+  Reader.read_line r >>= function
+    (* Step four: print it out. *)
+  | `Eof -> (printf "Error reading server\n"; return ())
+  | `Ok line -> (handle_resp line; loop r w)
+in loop r w
 
 let run ~host ~port =
   let addr = Tcp.to_host_and_port host port in
