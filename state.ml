@@ -70,7 +70,9 @@ let get_history st cid =
 let add_msg st uid (cid, msg) =
   let msgs = List.assoc cid st.chat_msg in
   print_string "removing \n";
-  failwith "Unimplemented"
+  let msgs' = msg :: msgs in
+  let dict' = LD.insert cid msgs' st.chat_msg in
+  {st with chat_msg = dict'}
 
 let add_user st uid uname =
   let open List in
