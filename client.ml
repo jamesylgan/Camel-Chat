@@ -38,7 +38,7 @@ type command =
 type state = {
   userid : int;
   curr_chatid : int;
-  chats : int list;
+  chats : (string * int) list;
   print: string list;
 }
 
@@ -76,9 +76,21 @@ let parse_send s st =
            ":" ^ s ^ chatid
     end
 
-(* A helper function for [parse_receive] that deals with the [get_history]
- * response string specifically. *)
-let rec extract_his s acc =
+let get_c = function
+  | 'a' -> "#SEND_MSG"
+  | 'b' -> "#GET_HISTORY"
+  | 'c' -> "#GET_ONLINE_USERS"
+  | 'd' -> "#CREATE_PRIV_CHAT"
+  | 'e' -> "#CREATE_PUB_CHAT"
+  | 'f' -> "#CREATE_USER"
+  | 'g' -> "#JOIN_CHAT"
+  | 'h' -> "#LEAVE_CHAT"
+  | 'i'-> "#GET_PUB_CHAT"
+  | others -> failwith "Invalid command id"
+
+(* A helper function for [parse_receive] that extracts infromation from
+ * string of the format "<len>:<name>". *)
+let rec extract s acc =
   let open String in
   match s with
   | "" -> acc
@@ -87,17 +99,21 @@ let rec extract_his s acc =
     let len = (sub s 0 c_loc) |> int_of_string in
     let m = sub s (c_loc+1) len in
     let new_s = sub s (c_loc + len + 1) ((length s) - c_loc - len - 1) in
-    extract_his new_s (acc @ [m])
+    extract new_s (acc @ [m])
   end
 
 let parse_receive s st =
   let open String in
+  let c_id = get s 3 in
   if (String.get s 0) == 'f' then
-    {st with print = ["Sorry your command was rejected by the server."]}
+    let last_c = rindex s ':' in
+    let mes = sub s (last_c + 1) ((length s) - last_c - 1) in
+    let p = (get_c c_id) ^ " failed: " ^ mes in
+    {st with print = [p]}
   else let len_of_uid =
         sub s 6 ((index_from s 6 ':')-6)
         |> int_of_string in
-    match (get s 3) with
+    match (c_id) with
     | 'a' -> st
     | 'b' -> begin
         let len = length s in
@@ -105,18 +121,15 @@ let parse_receive s st =
         let trd_c = index_from s (snd_c + 1) ':' in
         let fth_c = index_from s (trd_c + 1) ':' in
         let his = sub s (fth_c + 1) (len - fth_c - 1) in
-        {st with print = (extract_his his [])}
+        {st with print = (extract his [])}
       end
     | 'c' -> begin
-        let rec username_list str un_left =
-          if un_left = 0 then []
-          else let index_of_username = (rindex str ':') + 1 in
-            let len_of_username = length str - index_of_username in
-            let new_str = sub str 0 (index_of_username-1) in
-            sub str index_of_username len_of_username
-            :: (username_list new_str (un_left-1)) in
-        let p = username_list s len_of_uid in
-        {st with print = p}
+        let snd_c = index_from s 2 ':' in
+        let user_num = sub s 6 (snd_c - 6) |> int_of_string in
+        if user_num == 0 then
+          {st with print = ["No users online currently."]}
+        else let users = sub s (snd_c + 1) ((length s) - snd_c -1) in
+          {st with print = extract users []}
       end
     | 'f' -> begin
         let uid =
@@ -154,7 +167,7 @@ let parse_receive s st =
           userid = st.userid;
           curr_chatid = chatid;
           chats = chatid :: st.chats;
-          print = [""];
+          print = ["Your request is accepted :)"];
         }
 
 (* TODO: Yo James, would you mind work on this?
