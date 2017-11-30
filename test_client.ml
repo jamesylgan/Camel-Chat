@@ -5,12 +5,18 @@ open Unix
 (* [handle_stdin str] forms the stringified client_input that the client sends
  * to the sever from the command line input [str] *)
 let handle_stdin str =
-  str ^ "do something"
+  str
 
 (* [handle_resp str] takes [str] which is the stringified response from the
  * server, parses it to update its state or prints if necessary. *)
 let handle_resp str =
-  print_endline (str ^"change from server"); ()
+  print_endline (str); ()
+
+let rec read r =
+  Reader.read_line r >>= function
+    (* Step four: print it out. *)
+  | `Eof -> (printf "Error reading server\n"; return ())
+  | `Ok line -> (handle_resp line; read r)
 
 let chat _ r w =
   let stdin = Lazy.force Reader.stdin in
@@ -20,17 +26,15 @@ let chat _ r w =
     Reader.read_line stdin >>= function
     | `Eof -> (printf "Error reading stdin\n"; return ())
     | `Ok line ->
+      begin
       (* Step two: send it to the server. *)
       Writer.write_line w (handle_stdin line);
+      loop r w
+      end in
+    don't_wait_for (loop r w);
       (* Step three: read back the echoed string. *)
-      read r;
-
-and read r =
-  Reader.read_line r >>= function
-    (* Step four: print it out. *)
-  | `Eof -> (printf "Error reading server\n"; return ())
-  | `Ok line -> (handle_resp line; loop r w)
-in loop r w
+    don't_wait_for (read r);
+    Deferred.never ()
 
 let run ~host ~port =
   let addr = Tcp.to_host_and_port host port in
