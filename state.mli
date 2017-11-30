@@ -1,6 +1,15 @@
 open Data
 
-type state
+module LD = ListDict
+
+type state = {
+    curr_conns: (int, Async.Reader.t * Async.Writer.t) LD.t;
+    user_list: (int, string) LD.t;
+    priv_chat_list: (int, int list) LD.t;
+    pub_chat_list:(int, int list) LD.t;
+    pub_chat_names: (string, int) LD.t;
+    chat_msg: (int, (int*string) list) LD.t;
+  }
 
 exception UpdateError of string
 
