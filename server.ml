@@ -51,7 +51,10 @@ let input_of_string s =
   let find_chat_id str =
     find_chat_name str |> int_of_string in
   match String.get s 0 with
-  | 'a' -> {userid = (response_uid s); cmd = Send_msg (0,"")}(*TODO: James*)
+  | 'a' -> {userid = (response_uid s);
+            cmd = Send_msg (find_chat_id s,
+                            (String.sub s 0 (String.rindex s ','))
+                            |> find_chat_name)}
   | 'b' -> {userid = (response_uid s); cmd = Get_history (find_chat_id s)}
   | 'c' -> {userid = (response_uid s); cmd = Get_online_users}
   | 'd' -> {userid = (response_uid s); cmd = Create_priv_chat (find_chat_name s)}
