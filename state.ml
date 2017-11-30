@@ -28,7 +28,7 @@ type state = {
   priv_chat_list: (cid, uid list) LD.t;
   pub_chat_list:(cid, uid list) LD.t;
   pub_chat_names: (cname, cid) LD.t;
-  chat_msg: (cid, (int*string) list) LD.t;
+  chat_msg: (cid, (uid*string) list) LD.t;
 }
 
 let init_state () = {curr_conns = LD.empty;
@@ -49,8 +49,6 @@ let get_chats_of_uid st uid =
                        else get_cids id t acc in
   List.rev_append (get_cids uid privs []) (get_cids uid pubs [] |> List.rev)
 
-let get_conns_of_chat st uid chatid = failwith "Unimplemented"
-
 let get_priv_chats st = st.priv_chat_list
 
 let get_online_users st = List.rev_map (fun x -> snd x) st.user_list
@@ -59,6 +57,11 @@ let get_pub_chats st = List.rev_map (fun x -> fst x) st.pub_chat_names
 
 let get_users_of_chat st cid =
   try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list
+
+let get_conns_of_chat st uid chatid =
+  let uids = get_users_of_chat st chatid in
+  let conns = List.filter (fun x -> List.mem (fst x) uids) st.curr_conns in
+  List.map (fun x -> snd x) conns
 
 let get_history st cid =
   let msgs = List.assoc cid st.chat_msg in
@@ -70,7 +73,7 @@ let get_history st cid =
 let add_msg st uid (cid, msg) =
   let msgs = List.assoc cid st.chat_msg in
   print_string "removing \n";
-  let msgs' = msg :: msgs in
+  let msgs' = (uid, msg) :: msgs in
   let dict' = LD.insert cid msgs' st.chat_msg in
   {st with chat_msg = dict'}
 
