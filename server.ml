@@ -38,7 +38,29 @@ type response = {
 }
 
 let input_of_string s =
-  {userid = -1; cmd = Create_user "name"}
+  let find_chat_name str = let identifier_index = String.rindex s ':' + 1 in
+    String.sub s (identifier_index) ((String.length s) - identifier_index) in
+  let len_of_uid str =
+    String.sub str 6 ((String.index_from str 6 ':')-6)
+    |> int_of_string in
+  let first_data str =
+    String.sub str ((String.index_from str 6 ':') + 1) (len_of_uid str) in
+  let response_uid str =
+    first_data str
+    |> int_of_string in
+  let find_chat_id str =
+    find_chat_name str |> int_of_string in
+  match String.get s 0 with
+  | 'a' -> {userid = (response_uid s); cmd = Send_msg (0,"")}(*TODO: James*)
+  | 'b' -> {userid = (response_uid s); cmd = Get_history (find_chat_id s)}
+  | 'c' -> {userid = (response_uid s); cmd = Get_online_users}
+  | 'd' -> {userid = (response_uid s); cmd = Create_priv_chat (find_chat_name s)}
+  | 'e' -> {userid = (response_uid s); cmd = Create_pub_chat (find_chat_name s)}
+  | 'f' -> {userid = -1; cmd = Create_user (find_chat_name s)}
+  | 'g' -> {userid = (response_uid s); cmd = Join_chat (find_chat_name s)}
+  | 'h' -> {userid = (response_uid s); cmd = Leave_chat (find_chat_name s)}
+  | 'i' -> {userid = (response_uid s); cmd = Get_public_chats}
+  | _ -> failwith "Invalid command ID"
 
 let string_of_response res =
   failwith "unimplemented"
