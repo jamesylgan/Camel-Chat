@@ -6,6 +6,9 @@ tclient:
 	ocamlbuild -use-ocamlfind test_client.byte && ./test_client.byte -host ${HOST} -port ${PORT}
 #eg make HOST="127.0.0.1" PORT=9999 tclient
 
+tstate:
+	ocamlbuild -use-ocamlfind test_state.byte && ./test_state.byte
+
 server:
 	ocamlbuild -use-ocamlfind server.byte && ./server.byte -port ${PORT}
 
