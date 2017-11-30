@@ -9,18 +9,17 @@ type response = {
 
 exception Quit
 
-(*I don't completely understand this, but
-  what purpose does ref serve? Can we not use ints?
-*)
 let st = ref []
 let uid = ref (-1)
 let next_uid = fun () -> uid := (!uid) + 1; !uid
 
 let parse msg curr_uid =
+  print_string "parsing";
   List.iter !st
     (fun (uid,(r,w)) ->
        if curr_uid <> uid && Writer.is_open w
-       then Writer.write w (string_of_int curr_uid ^ " says: " ^ msg));
+       then Writer.write w (string_of_int curr_uid ^ " says: " ^ msg)
+       else if Writer.is_closed w then print_string "client disconnected";);
   let () = print_string ("Received command: " ^ msg) in
   if msg = "hello\n" then "yes\n" else "no\n"
 
@@ -31,27 +30,7 @@ let handle_connection _addr r w =
   Pipe.transfer (Reader.pipe r) (Writer.pipe w)
     (fun x -> parse x curr_uid)
 
-let quit_regex = Str.regexp {|^#quit\(;;\)?$|}
-
-let matches s r =
-  Str.string_match r s 0
-
-let handle_stdin input =
-  if matches input quit_regex then let _ = exit 0 in ()
-  else print_string "Invalid command\n"; ()
-
-let rec read_cmdline () =
-  let stdin : Reader.t = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= fun res -> ignore(return
-    begin
-      match res with
-      | `Ok str -> handle_stdin str
-      | `Eof ->  ()
-    end);
-  ignore (read_cmdline());
-  Deferred.never ()
-
-let create_tcp ~port =
+let run ~port =
   let host_and_port =
     Tcp.Server.create
       ~on_handler_error:`Raise
@@ -60,10 +39,14 @@ let create_tcp ~port =
   ignore (host_and_port : (Socket.Address.Inet.t, int) Tcp.Server.t Deferred.t);
   Deferred.never ()
 
-let run ~port =
-  ignore (read_cmdline ());
-  ignore (create_tcp port);
-  Deferred.never ()
+let quit_regex = Str.regexp {|^#quit\(;;\)?$|}
+
+let matches s r =
+  Str.string_match r s 0
+
+let handle_stdin input =
+  if matches input quit_regex then raise Quit
+  else print_string "Invalid command\n"; ()
 
 let main () =
   print_string "Starting chat server... \n";

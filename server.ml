@@ -3,8 +3,8 @@ open State
 open Core
 open Async
 
-type info = Nil | String of string | ISList of (int*string) list |
-            Int of int | SList of string list
+type info = Nil | String of string | ISList of (int * string) list |
+            Int of int | SList of string list | ISTuple of (int * string)
 
 let st = ref (init_state ())
 let uid = ref (-1)
@@ -19,7 +19,6 @@ type command =
   | Send_msg of (int*string) (* chatid, msg*)
   | Get_public_chats
   | Get_online_users
-  | Get_curr_chats
   | Join_chat of string (* chatname*)
   | Get_history of int (* chatid *)
   | Create_priv_chat of string (* username of other user *)
@@ -53,14 +52,14 @@ let get_users uid =
 let join_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := add_user_to_pub_chat !st uid chatid;
-    {userid = uid; cmd = "g"; success = true; info = Nil}
+    {userid = uid; cmd = "g"; success = true; info = String chatname}
   with UpdateError err ->
     {userid = uid; cmd = "g"; success = false; info = String err}
 
 let leave_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := remove_from_chat !st uid chatid;
-    {userid = uid; cmd = "h"; success = true; info = Nil}
+    {userid = uid; cmd = "h"; success = true; info = String chatname}
   with UpdateError err ->
     {userid = uid; cmd = "h"; success = false; info = String err}
 
@@ -72,23 +71,38 @@ let create_user username =
     let _ = prev_uid () in
     {userid = -1; cmd = "f"; success = false; info = String err}
 
-let delete_user uid =
-  st := remove_user !st uid
-
-let handle_disconnect st uid =
-  failwith "unimplemented"
-
-let broadcast_to_chat uid (chatid, msg) =
-  let username = get_username !st uid in
-  let rwLst = get_conns_of_chat !st uid chatid in
+(* does nothing if server broadcasting to disconnected client *)
+let rec broadcast_to_chat uid (chatid, msg) =
+  let rwLst = get_conns_of_chat !st chatid in
   List.iter rwLst
-    (fun (_,w) ->
-       if Writer.is_open w
-       then Writer.write w (username ^ " says: " ^ msg)); ()
+    (fun (conn_uid,(_,w)) ->
+       if Writer.is_open w then Writer.write w msg
+       else disconnected_client uid conn_uid)
 
-let send_msg uid tuple =
-  try st := add_msg !st uid tuple;
-    ignore (broadcast_to_chat uid tuple);
+and disconnected_client uid conn_uid =
+  if uid = 0 then () (* server is broadcasting *)
+  else
+    (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected");
+     handle_disconnect conn_uid)
+
+and handle_disconnect uid =
+  try let user_chats = get_chats_of_uid !st uid in
+    let username = get_username !st uid in
+    let msg = username ^ " has left." in
+    List.iter user_chats
+      (fun cid ->
+         st := add_msg !st 0 (cid, msg);
+         broadcast_to_chat 0 (cid,msg)
+      );
+    st := remove_user !st uid; ()
+  with UpdateError err -> print_string err; ()
+
+(* msg stored includes username *)
+let send_msg uid (chatid, msg) =
+  try let username = get_username !st uid in
+    let new_msg = username ^ ": " ^ msg in
+    st := add_msg !st uid (chatid, new_msg);
+    ignore (broadcast_to_chat uid (chatid, new_msg));
     {userid = uid; cmd = "a"; success = true; info = Nil}
   with UpdateError err ->
     {userid = uid; cmd = "a"; success = false; info = String err}
@@ -103,7 +117,8 @@ let create_private_chat uid username =
   let uid2 = get_uid !st username in
   let new_chatid = next_chatid () in
   try st := add_priv_chat !st uid uid2 new_chatid;
-    {userid = uid; cmd = "d"; success = true; info = Int new_chatid}
+    {userid = uid; cmd = "d"; success = true;
+     info = ISTuple (new_chatid, username)}
   with UpdateError err ->
     let _ = prev_chatid () in
     {userid = uid; cmd = "d"; success = false; info = String err}
@@ -111,7 +126,8 @@ let create_private_chat uid username =
 let create_pub_chat uid chatname =
   let new_chatid = next_chatid () in
   try st := add_pub_chat !st uid new_chatid chatname;
-    {userid = uid; cmd = "e"; success = true; info = Int new_chatid}
+    {userid = uid; cmd = "e"; success = true;
+     info = ISTuple (new_chatid, chatname)}
   with UpdateError err ->
     let _ = prev_chatid () in
     {userid = uid; cmd = "e"; success = false; info = String err}
@@ -133,8 +149,7 @@ let parse str =
     | Get_history chatid -> get_history input.userid chatid
     | Create_priv_chat username -> create_private_chat input.userid username
     | Create_pub_chat chatname -> create_pub_chat input.userid chatname
-    | Leave_chat chatname -> leave_chat input.userid chatname
-    | Get_curr_chats -> failwith "unim" in
+    | Leave_chat chatname -> leave_chat input.userid chatname in
   string_of_response res
 
 let handle_connection _addr r w =
@@ -153,11 +168,11 @@ let handle_stdin input =
 
 let rec read_cmdline () =
   let stdin : Reader.t = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= fun res -> ignore(return
+  Reader.read_line stdin >>= fun res -> ignore(
     begin
       match res with
-      | `Ok str -> handle_stdin str
-      | `Eof ->  ()
+      | `Ok str -> return (handle_stdin str)
+      | `Eof ->  return ()
     end);
   ignore (read_cmdline());
   Deferred.never ()

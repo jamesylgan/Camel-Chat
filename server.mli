@@ -45,16 +45,11 @@ val leave_chat: int -> string -> response
  * updated state. *)
 val create_user: string -> response
 
-(* [delete_user uid] removes the user from user_list in [st]. Sends a
- * response to the client and returns the updated state. *)
-val delete_user: int -> unit
-
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all
  * chats that the user is in. Broadcasts message to all chats that the user was
- * in: "user _ has left". Sends a response to the client and returns the updated
- * state. *)
-val handle_disconnect: state -> int -> state
+ * in: "user _ has left". Sends a response to the client. *)
+val handle_disconnect: int -> unit
 
 (* [broadcast_to_chat uid (chatid, msg)] is a helper for [handle_disconnect] to
  * send messages to all chats that the disconnected [uid] was in. *)
@@ -79,7 +74,8 @@ val create_pub_chat: int -> string -> response
  * with the list in the response to the client. *)
 val get_public_chat: int -> response
 
-(* [send_msg uid (chatid, msg)] sends [msg] to all users in the [chatid]. Adds
- * the tuple to the list of st.chat_msg and returns a response with success
- * or failure. *)
+(* [send_msg uid (chatid, msg)] sends [msg] appended with the username of [uid]
+ * to all users in the [chatid]. Adds the tuple to the list of st.chat_msg and
+ * returns a response with success or failure.
+ *)
 val send_msg: int -> (int * string) -> response

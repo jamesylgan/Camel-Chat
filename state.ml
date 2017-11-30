@@ -58,10 +58,10 @@ let get_pub_chats st = List.rev_map (fun x -> fst x) st.pub_chat_names
 let get_users_of_chat st cid =
   try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list
 
-let get_conns_of_chat st uid chatid =
+let get_conns_of_chat st chatid =
   let uids = get_users_of_chat st chatid in
-  let conns = List.filter (fun x -> List.mem (fst x) uids) st.curr_conns in
-  List.map (fun x -> snd x) conns
+  List.filter
+    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids) st.curr_conns
 
 let get_history st cid =
   let msgs = List.assoc cid st.chat_msg in

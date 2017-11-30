@@ -14,27 +14,20 @@ let handle_resp str =
 
 let rec read r =
   Reader.read_line r >>= function
-    (* Step four: print it out. *)
-  | `Eof -> (printf "Error reading server\n"; return ())
+  | `Eof -> (printf "Server error, please try again. \n"; exit 0;)
   | `Ok line -> (handle_resp line; read r)
 
-let chat _ r w =
+let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
-  let rec loop r w =
-    printf "> ";
-    (* Step one: read a line from the user. *)
-    Reader.read_line stdin >>= function
-    | `Eof -> (printf "Error reading stdin\n"; return ())
-    | `Ok line ->
-      begin
-      (* Step two: send it to the server. *)
-      Writer.write_line w (handle_stdin line);
-      loop r w
-      end in
-    don't_wait_for (loop r w);
-      (* Step three: read back the echoed string. *)
-    don't_wait_for (read r);
-    Deferred.never ()
+  Reader.read_line stdin >>= function
+  | `Eof -> (printf "Error reading stdin\n"; return ())
+  | `Ok line ->
+    Writer.write_line w (handle_stdin line); send_msg w
+
+let chat _ r w =
+  don't_wait_for (send_msg w);
+  don't_wait_for (read r);
+  Deferred.never ()
 
 let run ~host ~port =
   let addr = Tcp.to_host_and_port host port in
