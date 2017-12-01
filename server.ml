@@ -66,12 +66,12 @@ let input_of_string s =
   let open String in
   let find_chat_name str =
     let identifier_index = (last_c s) + 1 in
-    sub s (identifier_index) ((length s) - identifier_index) |> trim in
+    sub s (identifier_index) ((length s) - identifier_index) in
   let len_of_uid str =
-    sub str 6 ((index_from str 6 ':')-6)
+    sub str 3 ((index_from str 3 ':')-3)
     |> int_of_string in
   let first_data str =
-    sub str ((index_from str 6 ':') + 1) (len_of_uid str) in
+    sub str ((index_from str 3 ':') + 1) (len_of_uid str) in
   let response_uid str =
     first_data str
     |> int_of_string in
