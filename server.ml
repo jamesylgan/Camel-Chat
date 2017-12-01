@@ -206,13 +206,13 @@ let create_user username =
 (* does nothing if server broadcasting to disconnected client *)
 let rec broadcast_to_chat uid (chatid, msg) =
   let rwLst = get_conns_of_chat !st chatid in
-  List.iter rwLst
+  List.iter
     (fun (conn_uid,(_,w)) ->
        let resp_msg = string_of_response
            {userid = conn_uid; cmd = "j"; success = true;
-            info = String (chatname); chatid = chatid} in
+            info = String msg; chatid = chatid} in
        if Writer.is_open w then Writer.write w resp_msg
-       else disconnected_client uid conn_uid)
+       else disconnected_client uid conn_uid) rwLst
 
 and disconnected_client uid conn_uid =
   if uid = 0 then () (* server is broadcasting *)
@@ -224,11 +224,11 @@ and handle_disconnect uid =
   try let user_chats = get_chats_of_uid !st uid in
     let username = get_username !st uid in
     let msg = username ^ " has left." in
-    List.iter user_chats
+    List.iter
       (fun cid ->
          st := add_msg !st 0 (cid, msg);
          broadcast_to_chat 0 (cid,msg)
-      );
+      ) user_chats;
     st := remove_user !st uid; ()
   with UpdateError err -> print_string err; ()
 

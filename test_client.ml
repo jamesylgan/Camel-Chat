@@ -42,6 +42,7 @@ and read_create_username r w =
 (* parse string of server response; on success, update state accordingly with
  * username; on failure, print error and loop create_user *)
 and handle_create_user res r w =
+  print_string res;
   st := parse_receive res !st;
   List.iter !st.print (fun str -> print_string str);
 (*if !st.userid = -1 then create_user r w else return ()*)
