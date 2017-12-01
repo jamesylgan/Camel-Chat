@@ -35,7 +35,7 @@ let init_state () = {
   curr_conns = LD.empty;
   user_list = LD.empty;
   priv_chat_list = LD.empty;
-  pub_chat_list = LD.empty;
+  pub_chat_list = LD.empty |> LD.insert 0 [];
   pub_chat_names = LD.empty |> LD.insert "Lobby" 0;
   chat_msg = LD.empty
 }
@@ -96,7 +96,7 @@ let add_msg st uid (cid, msg) =
 let add_user st uid uname =
   let open List in
   let user_list' = (uid, uname) :: if st.user_list |> split |> snd |> mem uname
-                   then raise (UpdateError "Username taken")
+                   then raise (UpdateError "Username taken, please try again.")
                    else st.user_list in
   {st with user_list = user_list'}
 
@@ -107,9 +107,11 @@ let add_conn st uid (r,w) =
 
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = LD.insert chatid [uid] st.pub_chat_list in
-  let chat_names' = (chatname, chatid) :: if List.mem_assoc chatname st.pub_chat_names
-                    then raise (UpdateError "Chat name taken")
-                    else st.pub_chat_names in
+  let chat_names' =
+    (chatname, chatid) ::
+    if List.mem_assoc chatname st.pub_chat_names
+    then raise (UpdateError "Chat name taken, please try again.")
+    else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
 let add_priv_chat st uid1 uid2 chatid =
@@ -118,10 +120,10 @@ let add_priv_chat st uid1 uid2 chatid =
 
 let add_user_to_pub_chat st uid cid =
   try (
-  let user_lst = LD.get cid st.pub_chat_list in
-  let user_lst' = uid :: user_lst in
-  let chat_lst' = LD.insert cid user_lst' st.pub_chat_list in
-  {st with pub_chat_list = chat_lst'})
+    let user_lst = LD.get cid st.pub_chat_list in
+    let user_lst' = uid :: user_lst in
+    let chat_lst' = LD.insert cid user_lst' st.pub_chat_list in
+    {st with pub_chat_list = chat_lst'})
   with _ -> raise (UpdateError "Chat not found")
 
 let get_username st uid =
