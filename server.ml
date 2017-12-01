@@ -37,9 +37,36 @@ type response = {
   info: info;
 }
 
+(* A helper function that returns the index of last colon in a "client
+ * output" string. *)
+let last_c s =
+  let open String in
+  let n_of_chunk = function
+    | 'a' -> 3
+    | 'c' -> 1
+    | 'f' -> 1
+    | 'i' -> 1
+    | o -> 2 in
+  match n_of_chunk (get s 0) with
+  | 1 -> index_from s 0 ':'
+  | 2 -> begin
+    let fst_c = index_from s 0 ':' in
+    index_from s (fst_c + 1) ':'
+  end
+  | 3 -> begin
+      let fst_c = index_from s 0 ':' in
+      let snd_c = index_from s (fst_c + 1) ':' in
+      let snd_comma = index_from s 2 ',' in
+      let mes_len = (sub s (snd_comma + 2) (snd_c - snd_comma -2))
+                    |> int_of_string in
+      index_from s (snd_c + mes_len + 1) ':'
+    end
+  | _ -> failwith "Impossible n for n_of_chunk in server.ml"
+
 let input_of_string s =
   let open String in
-  let find_chat_name str = let identifier_index = rindex s ':' + 1 in
+  let find_chat_name str =
+    let identifier_index = (last_c s) + 1 in
     sub s (identifier_index) ((length s) - identifier_index) in
   let len_of_uid str =
     sub str 6 ((index_from str 6 ':')-6)
@@ -52,10 +79,18 @@ let input_of_string s =
   let find_chat_id str =
     find_chat_name str |> int_of_string in
   match get s 0 with
-  | 'a' -> {userid = (response_uid s);
-            cmd = Send_msg (find_chat_id s,
-                            (sub s 0 (rindex s ','))
+  | 'a' -> begin
+    let fst_c = index_from s 0 ':' in
+    let snd_c = index_from s (fst_c + 1) ':' in
+    let snd_comma = index_from s 2 ',' in
+    let mes_len = (sub s (snd_comma + 2) (snd_c - snd_comma -2))
+                  |> int_of_string in
+    let last_comma = snd_c + mes_len + 1 in
+      {userid = (response_uid s);
+       cmd = Send_msg (find_chat_id s,
+                            (sub s 0 last_comma)
                             |> find_chat_name)}
+  end
   | 'b' -> {userid = (response_uid s); cmd = Get_history (find_chat_id s)}
   | 'c' -> {userid = (response_uid s); cmd = Get_online_users}
   | 'd' -> {userid = (response_uid s); cmd = Create_priv_chat (find_chat_name s)}
@@ -162,7 +197,6 @@ let leave_chat uid chatname =
 let create_user username =
   let new_uid = next_uid () in
   try st := add_user !st new_uid username;
-    st := add_user_to_pub_chat !st new_uid 0;
     {userid = new_uid; cmd = "f"; success = true; info = Nil}
   with UpdateError err ->
     let _ = prev_uid () in
@@ -173,9 +207,7 @@ let rec broadcast_to_chat uid (chatid, msg) =
   let rwLst = get_conns_of_chat !st chatid in
   List.iter rwLst
     (fun (conn_uid,(_,w)) ->
-       let resp_msg = string_of_response
-           {userid = conn_uid; cmd = "j"; success = true; info = String msg} in
-       if Writer.is_open w then Writer.write w resp_msg
+       if Writer.is_open w then Writer.write w msg
        else disconnected_client uid conn_uid)
 
 and disconnected_client uid conn_uid =
@@ -195,7 +227,6 @@ and handle_disconnect uid =
       );
     st := remove_user !st uid; ()
   with UpdateError err -> print_string err; ()
-
 
 (* msg stored includes username *)
 let send_msg uid (chatid, msg) =
