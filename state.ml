@@ -50,7 +50,8 @@ let get_pub_chats st =
 
 let get_users_of_chat st cid =
   try
-    (let x = (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list) in
+    (let x = (try List.assoc cid st.pub_chat_list
+              with _ -> List.assoc cid st.priv_chat_list) in
      if x = [] then raise (UpdateError "No users in chat") else x)
   with _-> raise (UpdateError "Error")
 
@@ -92,9 +93,11 @@ let add_conn st uid (r,w) =
 
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = insert chatid [uid] st.pub_chat_list in
-  let chat_names' = (chatname, chatid) :: if List.mem_assoc chatname st.pub_chat_names
-                    then raise (UpdateError "Chat name taken, please try again.")
-                    else st.pub_chat_names in
+  let chat_names' =
+    (chatname, chatid) ::
+    if List.mem_assoc chatname st.pub_chat_names
+    then raise (UpdateError "Chat name taken, please try again.")
+    else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
 let add_priv_chat st uid1 uid2 chatid =
@@ -118,7 +121,8 @@ let get_uid st uname =
   with _ -> raise (UpdateError ("User not found"))
 
 let get_chatid st chatname =
-  try List.assoc chatname st.pub_chat_names with _ -> raise (UpdateError ("Chat not found"))
+  try List.assoc chatname st.pub_chat_names
+  with _ -> raise (UpdateError ("Chat not found"))
 
 let remove_user st uid =
   let conns' = List.remove_assoc uid st.curr_conns in
