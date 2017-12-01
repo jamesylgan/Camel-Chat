@@ -110,8 +110,6 @@ let rec string_of_response res =
              ^ (extract_info res.info) end
 and create_success res uid sl_len extract_info = begin match res.cmd with
   | "a" -> "s: a" ^ uid
-           ^ "chatid goes here" ^ "chat message goes here: INCONSISTENCY"
-  (*TODO: SEND_MSG:  "s: a, <len of uid>:<uid>, <len of chatid>:<chatid>, <len of message>:<message>"*)
   | "b" -> "s: b" ^ uid ^ ", " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
   | "c" -> "s: c, " ^ (sl_len res.info |> string_of_int)
