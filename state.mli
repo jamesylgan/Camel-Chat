@@ -1,14 +1,22 @@
-open Data
 
-module LD = ListDict
-
+(* [state] is the current state of the server. The server maintains a 4
+ * dictionaries as association lists:
+   - curr_conns maps uid to the (Reader, Writer) object of the connection
+   - user_list maps userid to usernames
+   - priv_chat_list maps each private chatid to a list of (userid, userid) tuple
+   - pub_chat_list maps each public chatid to a list of userids
+   - chat_msg maps each chatid to a (int * string) list (ie userid, messages of
+     the chat)
+   - pub_chat_names maps the name of a public chat to its chatid
+   - chat_msg maps the chatid to a list of messages that was sent in the chat
+*)
 type state = {
-    curr_conns: (int, Async.Reader.t * Async.Writer.t) LD.t;
-    user_list: (int, string) LD.t;
-    priv_chat_list: (int, int list) LD.t;
-    pub_chat_list:(int, int list) LD.t;
-    pub_chat_names: (string, int) LD.t;
-    chat_msg: (int, (int*string) list) LD.t;
+    curr_conns: (int * (Async.Reader.t * Async.Writer.t)) list;
+    user_list: (int * string) list;
+    priv_chat_list: (int * int list) list;
+    pub_chat_list:(int * int list) list;
+    pub_chat_names: (string * int) list;
+    chat_msg: (int * (int*string) list) list;
   }
 
 exception UpdateError of string
@@ -27,7 +35,7 @@ val get_conns_of_chat: state -> int ->
   (int * (Async.Reader.t * Async.Writer.t)) list
 
 (* [get_priv_chats st] is st.priv_chat_lists *)
-val get_priv_chats: state -> (int, int list) ListDict.t
+val get_priv_chats: state -> (int * int list) list
 
 (* [get_online_users st] is the string list of all online users *)
 val get_online_users: state -> string list

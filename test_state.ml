@@ -1,6 +1,5 @@
 open OUnit2
 open State
-open Data
 
 let emp = {curr_conns = [];
              user_list = [];
