@@ -54,11 +54,18 @@ let chat _ r w =
   rw_loop r w;
   Deferred.never ()
 
+let rec read_file ~input ~output addr r w file =
+  Reader.read_line file >>= function
+  | `Eof -> printf "Error reading server\n"; return ()
+  | `Ok line -> (print_string line; read_file ~input ~output addr r w file)
 
-let run ~host ~port =
+let open_file ~input ~output addr r w =
+  Reader.open_file input >>= read_file ~input ~output addr r w
+
+let run ~host ~port ~input ~output : unit Async_extra.Import.Deferred.t =
   let addr = Tcp.to_host_and_port host port in
-  ignore(Tcp.with_connection addr chat);
-  Deferred.never ()
+  Tcp.with_connection addr (open_file ~input ~output);
+    Deferred.never ()
 
 let main () =
   print_string "Starting Caml Chat... \n";
@@ -72,8 +79,12 @@ let main () =
         ~doc:" Port to listen on (default 9999)"
       +> flag "-port" (optional_with_default 9999 int)
         ~doc:" Port to listen on (default 9999)"
+      +> flag "-input" (optional_with_default "" string)
+        ~doc:" File with test inputs"
+      +> flag "-output" (optional_with_default "" string)
+        ~doc:" File to output server responses to"
     )
-    (fun host port () -> run ~host ~port)
+    (fun host port infile outfile -> run ~host ~port ~input ~output)
   |> Command.run
 
 let () = main ()

@@ -246,7 +246,8 @@ let send_msg uid (chatid, msg) =
 
 let get_history uid chatid =
   try let history = get_history !st chatid in
-    {userid = uid; cmd = "b"; success = true; info = ISList history; chatid = chatid}
+    {userid = uid; cmd = "b"; success = true; info = ISList history;
+     chatid = chatid}
   with UpdateError err ->
     {userid = uid; cmd = "b"; success = false; info = String err; chatid = -1}
 
@@ -271,7 +272,8 @@ let create_pub_chat uid chatname =
 
 let get_public_chat uid =
   try let pub_chats = get_pub_chats !st in
-    {userid = uid; cmd = "i"; success = true; info = SList pub_chats; chatid = -1}
+    {userid = uid; cmd = "i"; success = true; info = SList pub_chats;
+     chatid = -1}
   with UpdateError err ->
   {userid = uid; cmd = "i"; success = false; info = String err; chatid = -1}
 
