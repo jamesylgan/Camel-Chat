@@ -80,67 +80,56 @@ let input_of_string s =
    | Leave_chat chatname -> leave_chat input.userid chatname in
  string_of_response res*)
 
-let string_of_response res =
+let rec string_of_response res =
   let open String in
   let uid = ", " ^ (res.userid |> string_of_int |> length |> string_of_int)
             ^ ":" ^ (res.userid |> string_of_int) in
   let sl_len i =
-    match i with
-    | SList x -> List.length x
-    | _ -> failwith "Don't use this not on SList" in
+    begin match i with
+      | SList x -> List.length x
+      | ISList x -> List.length x
+      | _ -> failwith "Don't use this not on SList" end in
   let extract_info i =
-    match i with
+    begin match i with
     | String i -> i
     | SList x ->
       let rec formlist lst str = begin match lst with
-        | [] -> ""
+        | [] -> str
         | h::t -> formlist t (str ^ (length h |> string_of_int) ^ ":" ^ h)
-       end in formlist x ""
-    | _ -> failwith "Don't use this not on info" in
-  let chatname res = ", " ^ (extract_info res.info |> length |> string_of_int)
-       ^ ":" ^ (extract_info res.info) in
-  match res.success with
-  | true -> "s: " ^
-    begin match res.cmd with
-      | "a" -> "a" ^ uid
-               ^ "chatid goes here" ^ "chat message goes here: INCONSISTENCY"
-(*TODO: SEND_MSG:  "s: a, <len of uid>:<uid>, <len of chatid>:<chatid>, <len of message>:<message>"*)
-      | "b" -> "b" ^ uid
-               ^ "chatid goes here"
-               ^ "convert ISList to string, does each message include username?"
-(*TODO: GET_HISTORY: "s: b, <len of uid>:<uid>, <len of chatid>:<chatid>, <number of messages>:<history>"*)
-(*<history> = <len of each message>:<UN_and_message>*)
-(*<UN_and_message> = <username>: <message>*)
-      | "c" -> "c" ^ (sl_len res.info |> string_of_int)
-               ^ ":" ^ (extract_info res.info)
-(*GET_ONLINE_USERS: “s: c, <number of users><online users>”
-<online users> = :<len of usernames>:<username>*)
-      | "d" -> "d" ^ uid
-               ^ "chatid goes here" ^ chatname res
-(*TODO: CREATE_PRIV_CHAT:  “s: d, <len of uid>:<uid>, <len of chatid>:<chatid>, <len of chat name>:<chat name>”*)
-      | "e" -> "e" ^ uid
-               ^ "chatid goes here" ^ chatname res
-(*TODO: CREATE_PUB_CHAT: “s: e, <len of uid>:<uid>, <len of chatid>:<chatid>, <len of chat name>:<chat name>”*)
-      | "f" -> "f" ^ uid
-(*CREATE_USER: “s: f, <len of uid>:<uid>”*)
-      | "g" -> "g" ^ uid
-               ^ "chatid goes here" ^ chatname res
-(*TODO: JOIN_CHAT: “s: g, <len of uid>:<uid>, <len of chat id>:<chat id>, <len of chat name>:<chat name>”*)
-      | "h" -> "h" ^ uid
-               ^ "chatid goes here" ^ chatname res
-(*TODO: LEAVE_CHAT: “s: h, <len of uid>:<uid>, <len of chat id>:<chat id>, <len of chat name>:<chat name>”*)
-      | "i" -> "i" ^ uid
-               ^ (sl_len res.info |> string_of_int)
-               ^ ":" ^ (extract_info res.info)
-(*GET_PUB_CHAT: “s: i, <len of uid>:<uid>, <number of pub chat><pub chats>”
-                   <pub chats> = :<len of chat name>:<chat name>*)
-      | _ -> failwith "Invalid input command"
-    end
+      end in formlist x ""
+    | ISList x ->
+      let rec formlist lst str = begin match lst with
+        | [] -> str
+        | (junk_uid, h)::t -> formlist t (str ^ (length h |> string_of_int) ^ ":" ^ h)
+      end in formlist x ""
+    | _ -> failwith "Don't use this not on info" end in
+  begin match res.success with
+  | true -> create_success res uid sl_len extract_info
   | false -> "f: " ^ res.cmd ^ ", "
              ^ (length (extract_info res.info) |> string_of_int) ^ ":"
-             ^ (extract_info res.info)
-(*“f: <command id>, <len of error msg>:<error message> *)
-
+             ^ (extract_info res.info) end
+and create_success res uid sl_len extract_info = begin match res.cmd with
+  | "a" -> "s: a" ^ uid
+           ^ "chatid goes here" ^ "chat message goes here: INCONSISTENCY"
+  (*TODO: SEND_MSG:  "s: a, <len of uid>:<uid>, <len of chatid>:<chatid>, <len of message>:<message>"*)
+  | "b" -> "s: b" ^ uid ^ ", " ^ (sl_len res.info |> string_of_int)
+           ^ ":" ^ (extract_info res.info)
+  | "c" -> "s: c, " ^ (sl_len res.info |> string_of_int)
+           ^ ":" ^ (extract_info res.info)
+  | "d" -> "s: d" ^ uid ^ ", "
+           ^ (extract_info res.info)
+  | "e" -> "s: e" ^ uid ^ ", "
+           ^ (extract_info res.info)
+  | "f" -> "s: f" ^ uid
+  | "g" -> "s: g" ^ uid ^ ", "
+           ^ (extract_info res.info)
+  | "h" -> "s: h" ^ uid ^ ", "
+           ^ (extract_info res.info)
+  | "i" -> "s: i" ^ uid ^ ", "
+           ^ (sl_len res.info |> string_of_int)
+           ^ ":" ^ (extract_info res.info)
+  | _ -> failwith "Invalid input command"
+end
 
 let get_users uid =
   try let users = get_online_users !st in
@@ -151,17 +140,22 @@ let get_users uid =
 let join_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := add_user_to_pub_chat !st uid chatid;
-    {userid = uid; cmd = "g"; success = true; info = String chatname}
-(* TODO: can use this solution to include chatid easily
         {userid = uid; cmd = "g"; success = true;
-        info = String (string_of_int chatid ^ ":" ^ chatname}*)
+         info = String ((String.length (string_of_int chatid) |> string_of_int)
+                        ^ ":" ^ string_of_int chatid  ^ ", "
+                        ^ (String.length chatname |> string_of_int)
+                        ^ ":" ^ chatname)}
   with UpdateError err ->
     {userid = uid; cmd = "g"; success = false; info = String err}
 
 let leave_chat uid chatname =
   let chatid = get_chatid !st chatname in
   try st := remove_from_chat !st uid chatid;
-    {userid = uid; cmd = "h"; success = true; info = String chatname}
+    {userid = uid; cmd = "h"; success = true;
+     info = String ((String.length (string_of_int chatid) |> string_of_int)
+                    ^ ":" ^ string_of_int chatid ^ ", "
+                    ^ (String.length chatname |> string_of_int)
+                    ^ ":" ^ chatname)}
   with UpdateError err ->
     {userid = uid; cmd = "h"; success = false; info = String err}
 
