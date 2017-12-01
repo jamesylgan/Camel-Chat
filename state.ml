@@ -38,7 +38,8 @@ let init_state () = {curr_conns = LD.empty;
                      pub_chat_names = LD.empty;
                      chat_msg = LD.empty
                     }
-
+(* NOTE: should this raise update error if user is not in any chats? Or should
+   it just return an empty list? What about if user does not exist? *)
 let get_chats_of_uid st uid =
   let privs = st.priv_chat_list in
   let pubs = st.pub_chat_list in
@@ -46,17 +47,22 @@ let get_chats_of_uid st uid =
     match lst with
     | [] -> acc
     | (cid, ids)::t -> if List.mem id ids then get_cids id t (cid::acc)
-                       else get_cids id t acc in
-  List.rev_append (get_cids uid privs []) (get_cids uid pubs [] |> List.rev)
+      else get_cids id t acc in
+  let check = List.rev_append (get_cids uid privs []) (get_cids uid pubs [] |> List.rev) in
+  if check = [] then raise (UpdateError "User not found") else check
 
+(* NOTE: should this raise update error if there are no private chats?*)
 let get_priv_chats st = st.priv_chat_list
 
+(* NOTE: should this raise update error if there are no online users?*)
 let get_online_users st = List.rev_map (fun x -> snd x) st.user_list
 
+(* NOTE: should this raise update error if there are no public chats?*)
 let get_pub_chats st = List.rev_map (fun x -> fst x) st.pub_chat_names
 
 let get_users_of_chat st cid =
-  try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list
+  try (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list)
+  with _ -> raise (UpdateError "Chat not found")
 
 let get_conns_of_chat st chatid =
   let uids = get_users_of_chat st chatid in
@@ -64,18 +70,21 @@ let get_conns_of_chat st chatid =
     (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids) st.curr_conns
 
 let get_history st cid =
-  let msgs = List.assoc cid st.chat_msg in
-  let rec f lst acc count = if count = 0 then acc else match lst with
-    | [] -> acc
-    | h::t -> f t (h::acc) (count-1) in
-  f msgs [] 10
+  try
+    (let msgs = List.assoc cid st.chat_msg in
+     let rec f lst acc count = if count = 0 then acc else match lst with
+         | [] -> acc
+         | h::t -> f t (h::acc) (count-1) in
+     f msgs [] 10)
+  with _ -> raise (UpdateError "Chat not found")
 
 let add_msg st uid (cid, msg) =
-  let msgs = List.assoc cid st.chat_msg in
-  print_string "removing \n";
-  let msgs' = (uid, msg) :: msgs in
-  let dict' = LD.insert cid msgs' st.chat_msg in
-  {st with chat_msg = dict'}
+  try
+    (let msgs = List.assoc cid st.chat_msg in
+     let msgs' = (uid, msg) :: msgs in
+     let dict' = LD.insert cid msgs' st.chat_msg in
+     {st with chat_msg = dict'})
+  with _ -> raise (UpdateError "Chat not found")
 
 let add_user st uid uname =
   let open List in
@@ -106,8 +115,9 @@ let add_user_to_pub_chat st uid cid =
 let get_username st uid = LD.get uid st.user_list
 
 let get_uid st uname =
-  let inv = Core.List.Assoc.inverse st.user_list in
-  List.assoc uname inv
+  try (
+    let inv = Core.List.Assoc.inverse st.user_list in List.assoc uname inv)
+  with _ -> raise (UpdateError ("Username not found"))
 
 let get_chatid st chatname = LD.get chatname st.pub_chat_names
 
@@ -119,7 +129,7 @@ let remove_user st uid =
   let priv_chat_lst' = chat_rm st.priv_chat_list in
   let pub_chat_lst' = chat_rm st.pub_chat_list in
   {st with curr_conns = conns'; user_list = user_lst';
-   priv_chat_list = priv_chat_lst'; pub_chat_list = pub_chat_lst'}
+           priv_chat_list = priv_chat_lst'; pub_chat_list = pub_chat_lst'}
 
 let remove_from_chat st uid chatid =
   let users' = List.filter (fun x -> x <> uid) (get_users_of_chat st chatid) in

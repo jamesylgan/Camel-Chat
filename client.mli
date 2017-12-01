@@ -13,6 +13,14 @@ type state = {
   print: string list;
 }
 
+(* [init_state ()] returns the initial [state] for a client before initializing
+ * a username. *)
+val init_state : unit -> state
+
+(* [parse_create_user s] returns the "server response" string for creating
+ * the username [s]. *)
+val parse_create_user : string -> string
+
 (* [parse_send c st] returns the "output string" that would be sent to the
  * server based on the user's typed input [c] and current state [st].
  *)
