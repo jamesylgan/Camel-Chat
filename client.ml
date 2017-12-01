@@ -13,6 +13,8 @@ let init_state () =
     print = [];
   }
 
+let get_chats st = st.chats |> List.map fst
+
 let parse_create_user s =
   "f, " ^ (String.length s |> string_of_int) ^ ":" ^ s
 
