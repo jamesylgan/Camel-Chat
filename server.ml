@@ -114,17 +114,12 @@ and create_success res uid sl_len extract_info = begin match res.cmd with
            ^ ":" ^ (extract_info res.info)
   | "c" -> "s: c, " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
-  | "d" -> "s: d" ^ uid ^ ", "
-           ^ (extract_info res.info)
-  | "e" -> "s: e" ^ uid ^ ", "
-           ^ (extract_info res.info)
+  | "d" -> "s: d" ^ uid ^ ", " ^ (extract_info res.info)
+  | "e" -> "s: e" ^ uid ^ ", " ^ (extract_info res.info)
   | "f" -> "s: f" ^ uid
-  | "g" -> "s: g" ^ uid ^ ", "
-           ^ (extract_info res.info)
-  | "h" -> "s: h" ^ uid ^ ", "
-           ^ (extract_info res.info)
-  | "i" -> "s: i" ^ uid ^ ", "
-           ^ (sl_len res.info |> string_of_int)
+  | "g" -> "s: g" ^ uid ^ ", " ^ (extract_info res.info)
+  | "h" -> "s: h" ^ uid ^ ", " ^ (extract_info res.info)
+  | "i" -> "s: i" ^ uid ^ ", " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
   | _ -> failwith "Invalid input command"
 end
