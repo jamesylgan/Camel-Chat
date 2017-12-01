@@ -3,7 +3,7 @@ test:
 #eg make PORT=9999 test
 
 client:
-	ocamlbuild -use-ocamlfind client_view.byte && ./client_view.byte -ip ${IP} -port ${PORT}
+	ocamlbuild -use-ocamlfind client_view.byte && ./client_view.byte -host ${HOST} -port ${PORT}
 #eg make HOST="127.0.0.1" PORT=9999 client
 
 test_state:

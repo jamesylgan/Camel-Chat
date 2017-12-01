@@ -74,9 +74,9 @@ let tests = [
   "am" >:: (fun _ -> assert_equal (add_msg s1 5 (2, "yo")) (s2));
   "gh'" >:: (fun _ -> assert_equal (get_history s2 2) h2);
   "au7" >:: (fun _ -> assert_equal (add_user s1 7 "u7") s3);
-  "au6" >:: (fun _ -> assert_raises (UpdateError "Username taken") (fun _ -> add_user s1 8 "u6"));
+  "au6" >:: (fun _ -> assert_raises (UpdateError "Username taken, please try again.") (fun _ -> add_user s1 8 "u6"));
   "apu" >:: (fun _ -> assert_equal (add_pub_chat s1 2 6 "chat5") s4);
-  "apux" >:: (fun _ -> assert_raises (UpdateError "Chat name taken") (fun _ -> add_pub_chat s1 2 6 "chat4"));
+  "apux" >:: (fun _ -> assert_raises (UpdateError "Chat name taken, please try again.") (fun _ -> add_pub_chat s1 2 6 "chat4"));
   "apr" >:: (fun _ -> assert_equal (add_priv_chat s1 2 3 6) s5);
   "aup" >:: (fun _ -> assert_equal (add_user_to_pub_chat s1 6 3) s6);
   "aupx" >:: (fun _ -> assert_raises (UpdateError "Chat not found") (fun _ -> add_user_to_pub_chat s1 6 8));

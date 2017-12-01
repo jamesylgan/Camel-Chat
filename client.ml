@@ -7,8 +7,8 @@ type state = {
 
 let init_state () =
   {
-    userid = -1111;
-    curr_chat = ("not initialized", -1111);
+    userid = -1;
+    curr_chat = ("not initialized", -1);
     chats = [];
     print = [];
   }

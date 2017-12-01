@@ -66,7 +66,7 @@ let input_of_string s =
   let open String in
   let find_chat_name str =
     let identifier_index = (last_c s) + 1 in
-    sub s (identifier_index) ((length s) - identifier_index) in
+    sub s (identifier_index) ((length s) - identifier_index) |> trim in
   let len_of_uid str =
     sub str 6 ((index_from str 6 ':')-6)
     |> int_of_string in
@@ -195,9 +195,11 @@ let leave_chat uid chatname =
     {userid = uid; cmd = "h"; success = false; info = String err; chatid = -1}
 
 let create_user username =
+  print_string "create uuser\n";
   let new_uid = next_uid () in
   try st := add_user !st new_uid username;
     st := add_user_to_pub_chat !st new_uid 0;
+    print_string "success\n";
     {userid = new_uid; cmd = "f"; success = true; info = Nil; chatid = -1}
   with UpdateError err ->
     let _ = prev_uid () in
@@ -287,10 +289,18 @@ let parse str =
     | Leave_chat chatname -> leave_chat input.userid chatname in
   string_of_response res
 
+(*let parse x = print_string ("parsing " ^ x); (x ^ "vvv")*)
 let handle_connection _addr r w =
   let () = print_string ("New client \n") in
-  Pipe.transfer (Reader.pipe r) (Writer.pipe w)
-    (fun x -> parse x)
+  let rec loop r w =
+    Reader.read_line r >>= function
+    | `Eof -> (printf "Error reading server\n"; return ())
+    | `Ok line -> (print_endline ("received: " ^ line);
+                   Writer.write_line w (parse line);
+                   loop r w)
+in loop r w
+  (*Pipe.transfer (Reader.pipe r) (Writer.pipe w)
+    (fun x -> parse x)*)
 
 let quit_regex = Str.regexp {|^#quit\(;;\)?$|}
 
