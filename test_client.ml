@@ -1,6 +1,7 @@
 open Core
 open Async
-open Unix
+
+(* let st = ref init_state () *)
 
 (* [handle_stdin str] forms the stringified client_input that the client sends
  * to the sever from the command line input [str] *)
@@ -24,7 +25,31 @@ let rec send_msg w =
   | `Ok line ->
     Writer.write_line w (handle_stdin line); send_msg w
 
+let rec create_user r w st =
+  let stdin = Lazy.force Reader.stdin in
+  Reader.read_line stdin >>= function
+  | `Eof -> (printf "Error reading stdin\n"; create_user r w st)
+  | `Ok line ->
+    let client_input = create_user_output line in
+    Writer.write_line w client_input;
+    read_create_username r w st
+
+(* return string of client output from [username] input *)
+and create_user_output username =
+  failwith "unimplemented"
+
+and read_create_username r w st =
+  Reader.read_line r >>= function
+  | `Eof -> (printf "Error reading server\n"; create_user r w st)
+  | `Ok line -> return (handle_create_user line)
+
+(* parse string of server response; on success, update state accordingly with
+ * username; on failure, print error and loop create_user *)
+and handle_create_user resp  =
+  failwith "unimplemented"
+
 let chat _ r w =
+  (* init state *)
   don't_wait_for (send_msg w);
   don't_wait_for (read r);
   Deferred.never ()
@@ -36,7 +61,8 @@ let run ~host ~port =
 
 let main () =
   print_string "Starting Caml Chat... \n";
-  print_string "Enter \"#quit\" to exit. \n";
+  print_string "Enter a username to begin: \n";
+  print_string "> ";
   Command.async
     ~summary:"Start the chat client"
     Command.Spec.(
