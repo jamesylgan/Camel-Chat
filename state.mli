@@ -16,11 +16,11 @@ exception UpdateError of string
 (* [init_state] initializes a blank state with empty dictionaries *)
 val init_state: unit -> state
 
-(* [get_chats_of_uid st uid chatid] is the list of chatids that the uid is in
+(* [get_chats_of_uid st uid] is the list of chatids that the uid is in
  * (both) public and private chats *)
 val get_chats_of_uid: state -> int -> int list
 
-(* [get_conns_of_chat st uid chatid] gets all uids 
+(* [get_conns_of_chat st uid chatid] gets all uids
  * and are in st.pub_chat_list or st.priv_chat_list and then gets the (r,w)
  * tuple associated with the uids as listed in st.curr_conns *)
 val get_conns_of_chat: state -> int ->
@@ -40,7 +40,7 @@ val get_pub_chats: state -> string list
  * a current chat id. *)
 val get_users_of_chat : state -> int -> int list
 
-(* get the last 10 chat messages in the chat *)
+(* get the last 10 chat messages in the chat, in order of oldest to newest. *)
 val get_history: state -> int -> (int * string) list
 
 (* [add_msg st uid (chatid, msg)] adds the chat message to st.chat_msg  *)
