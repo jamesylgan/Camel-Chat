@@ -100,9 +100,7 @@ let add_conn st uid (r,w) =
 
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = LD.insert chatid [uid] st.pub_chat_list in
-  let chat_names' = (chatname, chatid) :: if List.mem_assoc chatname st.pub_chat_names
-                    then raise (UpdateError "Chat name taken")
-                    else st.pub_chat_names in
+  let chat_names' = LD.insert chatname chatid st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
 let add_priv_chat st uid1 uid2 chatid=
@@ -110,22 +108,19 @@ let add_priv_chat st uid1 uid2 chatid=
   {st with priv_chat_list = chat_lst'}
 
 let add_user_to_pub_chat st uid cid =
-  try (
   let user_lst = LD.get cid st.pub_chat_list in
   let user_lst' = uid :: user_lst in
   let chat_lst' = LD.insert cid user_lst' st.pub_chat_list in
-  {st with pub_chat_list = chat_lst'})
-  with _ -> raise (UpdateError "Chat not found")
+  {st with pub_chat_list = chat_lst'}
 
-let get_username st uid = try LD.get uid st.user_list with _ -> raise (UpdateError "User not found")
+let get_username st uid = LD.get uid st.user_list
 
 let get_uid st uname =
   try (
     let inv = Core.List.Assoc.inverse st.user_list in List.assoc uname inv)
-  with _ -> raise (UpdateError ("User not found"))
+  with _ -> raise (UpdateError ("Username not found"))
 
-let get_chatid st chatname = try LD.get chatname st.pub_chat_names with _ ->
-  raise (UpdateError ("Chat not found"))
+let get_chatid st chatname = LD.get chatname st.pub_chat_names
 
 let remove_user st uid =
   let conns' = LD.remove uid st.curr_conns in
@@ -138,9 +133,7 @@ let remove_user st uid =
            priv_chat_list = priv_chat_lst'; pub_chat_list = pub_chat_lst'}
 
 let remove_from_chat st uid chatid =
-  try (
   let users' = List.filter (fun x -> x <> uid) (get_users_of_chat st chatid) in
   if List.mem_assoc chatid st.pub_chat_list
   then {st with pub_chat_list = LD.insert chatid users' st.pub_chat_list}
-  else {st with priv_chat_list = LD.insert chatid users' st.priv_chat_list})
-  with _ -> raise (UpdateError "Chat not found")
+  else {st with priv_chat_list = LD.insert chatid users' st.priv_chat_list}
