@@ -13,6 +13,7 @@ let rec read r =
   | `Eof -> (printf "Server error, please try again. \n"; exit 0;)
   | `Ok line ->
     st := parse_receive line !st;
+    (*print_endline line;*)
     print ();
     read r
 
@@ -53,7 +54,6 @@ let chat _ r w =
   print_string "Welcome to the lobby!\n";
   rw_loop r w;
   Deferred.never ()
-
 
 let run ~host ~port =
   let addr = Tcp.to_host_and_port host port in

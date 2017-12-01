@@ -194,32 +194,36 @@ let leave_chat uid chatname =
   with UpdateError err ->
     {userid = uid; cmd = "h"; success = false; info = String err; chatid = -1}
 
-let create_user username =
-  print_string "create uuser\n";
+let create_user username r w =
+  print_string "creating new user\n";
   let new_uid = next_uid () in
   try st := add_user !st new_uid username;
     st := add_user_to_pub_chat !st new_uid 0;
-    print_string "success\n";
-    {userid = new_uid; cmd = "f"; success = true; info = Nil; chatid = -1}
+    st := add_conn !st new_uid (r,w);
+    {userid = new_uid; cmd = "f"; success = true; info = Nil; chatid = 0}
   with UpdateError err ->
     let _ = prev_uid () in
     {userid = -1; cmd = "f"; success = false; info = String err; chatid = -1}
 
 (* does nothing if server broadcasting to disconnected client *)
 let rec broadcast_to_chat uid (chatid, msg) =
-  let rwLst = get_conns_of_chat !st chatid in
-  List.iter
-    (fun (conn_uid,(_,w)) ->
-       let resp_msg = string_of_response
-           {userid = conn_uid; cmd = "j"; success = true;
-            info = String msg; chatid = chatid} in
-       if Writer.is_open w then Writer.write w resp_msg
-       else disconnected_client uid conn_uid) rwLst
+  print_string ("broadcasting to chat " ^ string_of_int chatid ^ "\n");
+  let conn_lst = get_conns_of_chat !st chatid uid in
+  List.iter (iter_helper chatid msg uid) conn_lst
+
+and iter_helper chatid msg uid (conn_uid,(_,w)) =
+  print_string (string_of_int conn_uid ^ ": ");
+  let res_msg = string_of_response
+     {userid = conn_uid; cmd = "j"; success = true;
+      info = String msg; chatid = chatid} in
+  print_string (res_msg ^ "\n");
+  if Writer.is_open w then Writer.write w (res_msg ^"\n")
+  else disconnected_client uid conn_uid
 
 and disconnected_client uid conn_uid =
   if uid = 0 then () (* server is broadcasting *)
   else
-    (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected");
+    (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected\n");
      handle_disconnect conn_uid)
 
 and handle_disconnect uid =
@@ -236,12 +240,15 @@ and handle_disconnect uid =
 
 (* msg stored includes username *)
 let send_msg uid (chatid, msg) =
+  print_string ("msg received: " ^ msg ^ "\n");
   try let username = get_username !st uid in
     let new_msg = username ^ ": " ^ msg in
     st := add_msg !st uid (chatid, new_msg);
+    print_string ("added msg " ^ new_msg ^ "\n");
     ignore (broadcast_to_chat uid (chatid, new_msg));
     {userid = uid; cmd = "a"; success = true; info = Nil; chatid = chatid}
   with UpdateError err ->
+    print_string ("send msg error: " ^ err);
     {userid = uid; cmd = "a"; success = false; info = String err; chatid = -1}
 
 let get_history uid chatid =
@@ -277,10 +284,10 @@ let get_public_chat uid =
   with UpdateError err ->
   {userid = uid; cmd = "i"; success = false; info = String err; chatid = -1}
 
-let parse str =
+let parse str r w =
   let input = input_of_string str in
   let res = match input.cmd with
-    | Create_user s -> create_user s
+    | Create_user s -> create_user s r w
     | Send_msg tup -> send_msg input.userid tup
     | Get_public_chats -> get_public_chat input.userid
     | Get_online_users -> get_users input.userid
@@ -298,7 +305,7 @@ let handle_connection _addr r w =
     Reader.read_line r >>= function
     | `Eof -> (printf "Error reading server\n"; return ())
     | `Ok line -> (print_endline ("received: " ^ line);
-                   Writer.write_line w (parse line);
+                   Writer.write_line w (parse line r w);
                    loop r w)
 in loop r w
   (*Pipe.transfer (Reader.pipe r) (Writer.pipe w)

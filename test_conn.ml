@@ -64,8 +64,7 @@ let open_file ~input ~output addr r w =
 
 let run ~host ~port ~input ~output : unit Async_extra.Import.Deferred.t =
   let addr = Tcp.to_host_and_port host port in
-  Tcp.with_connection addr (open_file ~input ~output);
-    Deferred.never ()
+  Tcp.with_connection addr (open_file ~input ~output)
 
 let main () =
   print_string "Starting Caml Chat... \n";
