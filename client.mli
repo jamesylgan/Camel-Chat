@@ -8,8 +8,8 @@
  *)
 type state = {
   userid : int;
-  curr_chatid : int;
-  chats : int list;
+  curr_chat : string * int;
+  chats : (string * int) list;
   print: string list;
 }
 
@@ -17,7 +17,7 @@ type state = {
  * a username. *)
 val init_state : unit -> state
 
-(* [parse_create_user s] returns the "server response" string for creating
+(* [parse_create_user s] returns the "client output" string for creating
  * the username [s]. *)
 val parse_create_user : string -> string
 
@@ -31,4 +31,4 @@ val parse_send : string -> state -> string
  *)
 val parse_receive : string -> state -> state
 
-val extract_his : string -> string list -> string list
+(*val extract_his : string -> string list -> string list*)
