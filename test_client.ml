@@ -1,7 +1,8 @@
 open Core
 open Async
+open Client
 
-(* let st = ref init_state () *)
+let st = ref (init_state ())
 
 (* [handle_stdin str] forms the stringified client_input that the client sends
  * to the sever from the command line input [str] *)
@@ -25,33 +26,35 @@ let rec send_msg w =
   | `Ok line ->
     Writer.write_line w (handle_stdin line); send_msg w
 
-let rec create_user r w st =
+let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
-  | `Eof -> (printf "Error reading stdin\n"; create_user r w st)
+  | `Eof -> (printf "Error reading stdin\n"; create_user r w)
   | `Ok line ->
-    let client_input = create_user_output line in
-    Writer.write_line w client_input;
-    read_create_username r w st
+    Writer.write_line w (parse_create_user line);
+    read_create_username r w
 
-(* return string of client output from [username] input *)
-and create_user_output username =
-  failwith "unimplemented"
-
-and read_create_username r w st =
+and read_create_username r w =
   Reader.read_line r >>= function
-  | `Eof -> (printf "Error reading server\n"; create_user r w st)
-  | `Ok line -> return (handle_create_user line)
+  | `Eof -> (printf "Error reading server\n"; create_user r w)
+  | `Ok line -> return (handle_create_user line r w)
 
 (* parse string of server response; on success, update state accordingly with
  * username; on failure, print error and loop create_user *)
-and handle_create_user resp  =
-  failwith "unimplemented"
+and handle_create_user res r w =
+  st := parse_receive res !st;
+  List.iter !st.print (fun str -> print_string str);
+(*if !st.userid = -1 then create_user r w else return ()*)
+  return ()
 
-let chat _ r w =
-  (* init state *)
+let rw_loop r w _ =
   don't_wait_for (send_msg w);
   don't_wait_for (read r);
+  ()
+
+let chat _ r w =
+  create_user r w >>= fun x ->
+  rw_loop r w x;
   Deferred.never ()
 
 let run ~host ~port =
