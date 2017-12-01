@@ -31,13 +31,14 @@ type state = {
   chat_msg: (cid, (uid*string) list) LD.t;
 }
 
-let init_state () = {curr_conns = LD.empty;
-                     user_list = LD.empty;
-                     priv_chat_list = LD.empty;
-                     pub_chat_list = LD.empty;
-                     pub_chat_names = LD.empty;
-                     chat_msg = LD.empty
-                    }
+let init_state () = {
+  curr_conns = LD.empty;
+  user_list = LD.empty;
+  priv_chat_list = LD.empty;
+  pub_chat_list = LD.empty;
+  pub_chat_names = LD.empty |> LD.insert "Lobby" 0;
+  chat_msg = LD.empty
+}
 (* NOTE: should this raise update error if user is not in any chats? Or should
    it just return an empty list? What about if user does not exist? *)
 let get_chats_of_uid st uid =

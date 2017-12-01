@@ -160,6 +160,7 @@ let leave_chat uid chatname =
 let create_user username =
   let new_uid = next_uid () in
   try st := add_user !st new_uid username;
+    st := add_user_to_pub_chat !st new_uid 0;
     {userid = new_uid; cmd = "f"; success = true; info = Nil}
   with UpdateError err ->
     let _ = prev_uid () in
@@ -170,7 +171,9 @@ let rec broadcast_to_chat uid (chatid, msg) =
   let rwLst = get_conns_of_chat !st chatid in
   List.iter rwLst
     (fun (conn_uid,(_,w)) ->
-       if Writer.is_open w then Writer.write w msg
+       let resp_msg = string_of_response
+           {userid = conn_uid; cmd = "j"; success = true; info = String msg} in
+       if Writer.is_open w then Writer.write w resp_msg
        else disconnected_client uid conn_uid)
 
 and disconnected_client uid conn_uid =
@@ -190,6 +193,7 @@ and handle_disconnect uid =
       );
     st := remove_user !st uid; ()
   with UpdateError err -> print_string err; ()
+
 
 (* msg stored includes username *)
 let send_msg uid (chatid, msg) =
