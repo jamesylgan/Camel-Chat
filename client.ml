@@ -1,6 +1,6 @@
 type state = {
   userid : int;
-  curr_chatid : string * int;
+  curr_chat : string * int;
   chats : (string * int) list;
   print: string list;
 }
@@ -8,7 +8,7 @@ type state = {
 let init_state () =
   {
     userid = -1111;
-    curr_chatid = ("not initialized", -1111);
+    curr_chat = ("not initialized", -1111);
     chats = [];
     print = [];
   }
@@ -20,9 +20,9 @@ let parse_send s st =
   let open String in
   let uid = ", " ^ (st.userid |> string_of_int |> length |> string_of_int)
             ^ ":" ^ (st.userid |> string_of_int) in
-  let chatid = ", " ^ (snd st.curr_chatid |> string_of_int |> length |>
+  let chatid = ", " ^ (snd st.curr_chat |> string_of_int |> length |>
                        string_of_int)
-               ^ ":" ^ (snd st.curr_chatid |> string_of_int) in
+               ^ ":" ^ (snd st.curr_chat |> string_of_int) in
   match s with
   (* Does not include [Help], [Create_user], and [Quit] which are
      managed in [View.ml]. *)
@@ -112,7 +112,7 @@ let parse_receive s st =
           |> int_of_string in
         {
           userid = uid;
-          curr_chatid = ("lobby", 0);
+          curr_chat = ("lobby", 0);
           chats = [("lobby", 0)];
           print = ["Your username is accepted :D"]
         }
@@ -135,12 +135,12 @@ let parse_receive s st =
         match others with
         | 'h' -> {
           userid = st.userid;
-          curr_chatid = ("lobby", 0);
+          curr_chat = ("lobby", 0);
           chats = List.remove_assoc info st.chats;
           print = ["Your request is confirmed. Returning to lobby..."]
         }
         | 'j' -> begin
-          if ((snd st.curr_chatid) <> chatid) then
+          if ((snd st.curr_chat) <> chatid) then
             {st with print = []}
           else {st with print = [info]}
         end
@@ -148,7 +148,7 @@ let parse_receive s st =
   is automaticially swtiched to that of any newly created chat. *)
         | same -> {
             userid = st.userid;
-            curr_chatid = (info, chatid);
+            curr_chat = (info, chatid);
             chats = (info, chatid) :: st.chats;
             print = ["Your request is accepted :)"];
         }
