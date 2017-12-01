@@ -7,10 +7,10 @@ type info = Nil | String of string | ISList of (int * string) list |
             Int of int | SList of string list | ISTuple of (int * string)
 
 let st = ref (init_state ())
-let uid = ref (-1)
+let uid = ref (0)
 let next_uid = fun () -> uid := (!uid) + 1; !uid
 let prev_uid = fun () -> uid := (!uid) - 1; !uid
-let chatid = ref (-1)
+let chatid = ref (0)
 let next_chatid = fun () -> chatid := (!chatid) + 1; !chatid
 let prev_chatid = fun () -> chatid := (!chatid) - 1; !chatid
 
