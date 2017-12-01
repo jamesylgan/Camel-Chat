@@ -39,8 +39,7 @@ let init_state () = {
   pub_chat_names = LD.empty |> LD.insert "Lobby" 0;
   chat_msg = LD.empty
 }
-(* NOTE: should this raise update error if user is not in any chats? Or should
-   it just return an empty list? What about if user does not exist? *)
+
 let get_chats_of_uid st uid =
   let privs = st.priv_chat_list in
   let pubs = st.pub_chat_list in
@@ -52,23 +51,30 @@ let get_chats_of_uid st uid =
   let check = List.rev_append (get_cids uid privs []) (get_cids uid pubs [] |> List.rev) in
   if check = [] then raise (UpdateError "User not found") else check
 
-(* NOTE: should this raise update error if there are no private chats?*)
-let get_priv_chats st = st.priv_chat_list
+let get_priv_chats st =
+  if st.priv_chat_list = [] then raise (UpdateError "No private chats")
+  else st.priv_chat_list
 
-(* NOTE: should this raise update error if there are no online users?*)
-let get_online_users st = List.rev_map (fun x -> snd x) st.user_list
+let get_online_users st =
+  let x = List.rev_map (fun x -> snd x) st.user_list in
+  if x = [] then raise (UpdateError "No online users") else x
 
-(* NOTE: should this raise update error if there are no public chats?*)
-let get_pub_chats st = List.rev_map (fun x -> fst x) st.pub_chat_names
+let get_pub_chats st =
+  let x = List.rev_map (fun x -> fst x) st.pub_chat_names in
+  if x = [] then raise(UpdateError "No public chats") else x
 
 let get_users_of_chat st cid =
-  try (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list)
-  with _ -> raise (UpdateError "Chat not found")
+  try
+    (let x = (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list) in
+     if x = [] then raise (UpdateError "No users in chat") else x)
+  with _-> raise (UpdateError "Error")
 
 let get_conns_of_chat st chatid =
+  try (
   let uids = get_users_of_chat st chatid in
   List.filter
-    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids) st.curr_conns
+    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids) st.curr_conns)
+  with _ -> raise (UpdateError "Error")
 
 let get_history st cid =
   try
@@ -95,8 +101,9 @@ let add_user st uid uname =
   {st with user_list = user_list'}
 
 let add_conn st uid (r,w) =
-  let conns' = LD.insert uid (r,w) st.curr_conns in
-  {st with curr_conns = conns'}
+  try (let conns' = LD.insert uid (r,w) st.curr_conns in
+       {st with curr_conns = conns'})
+  with _ -> raise (UpdateError "Error")
 
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = LD.insert chatid [uid] st.pub_chat_list in
@@ -105,7 +112,7 @@ let add_pub_chat st uid chatid chatname =
                     else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
 
-let add_priv_chat st uid1 uid2 chatid=
+let add_priv_chat st uid1 uid2 chatid =
   let chat_lst' = LD.insert chatid [uid1; uid2] st.priv_chat_list in
   {st with priv_chat_list = chat_lst'}
 
