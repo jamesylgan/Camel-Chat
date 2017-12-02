@@ -4,9 +4,9 @@ open State
 let emp = {curr_conns = [];
              user_list = [];
              priv_chat_list = [];
-             pub_chat_list = [];
+             pub_chat_list = [(0, [])];
              pub_chat_names = [("Lobby", 0)];
-             chat_msg = []
+           chat_msg = [(0, [])]
             }
 
 let c0 = List.rev [(1, "hi"); (2, "hey"); (1, "sup"); (2, "nm"); (2, "u?"); (1, "same.");

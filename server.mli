@@ -23,7 +23,13 @@ type client_input = {
 }
 
 (* [response] is the message that the server sends to the client *)
-type response
+type response = {
+  userid: int;
+  cmd: string;
+  success: bool;
+  info: info;
+  chatid: int
+}
 
 (* [input_of_string s] is the client_input record of [s] *)
 val input_of_string: string -> client_input
