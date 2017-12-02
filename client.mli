@@ -20,7 +20,7 @@ val get_curr_chat : state -> string
 
 (* [get_print st] returns the string list that should be printed for a user
  * in state [st]. *)
-val get_userid : state -> string list
+val get_print : state -> string list
 
 (* [get_chats st] returns a list of the chat names which a user in state
  * [st] has available. *)
