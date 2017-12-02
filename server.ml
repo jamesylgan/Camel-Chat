@@ -4,14 +4,6 @@ open Async
 type info = Nil | String of string | ISList of (int * string) list |
             Int of int | SList of string list | ISTuple of (int * string)
 
-let st = ref (init_state ())
-let uid = ref (0)
-let next_uid = fun () -> uid := (!uid) + 1; !uid
-let prev_uid = fun () -> uid := (!uid) - 1; !uid
-let chatid = ref (0)
-let next_chatid = fun () -> chatid := (!chatid) + 1; !chatid
-let prev_chatid = fun () -> chatid := (!chatid) - 1; !chatid
-
 type command =
   | Create_user of string (* username *)
   | Send_msg of (int*string) (* chatid, msg*)
@@ -34,6 +26,20 @@ type response = {
   success: bool;
   info: info;
   chatid: int
+}
+
+type view_state = {
+  state : State.state;
+  uid : int;
+  chatid : int;
+  response: response option
+}
+
+let init_state () = {
+  state = init_state ();
+  uid = 0;
+  chatid = 0;
+  response = None
 }
 
 (* A helper function that returns the index of last colon in a "client
@@ -172,191 +178,160 @@ and create_success res uid cid sl_len extract_info = begin match res.cmd with
   | _ -> failwith "Invalid input command"
 end
 
-let get_users uid =
-  try let users = get_online_users !st in
-    {userid = uid; cmd = "c"; success = true; info = SList users; chatid = -1}
+let get_users st uid =
+  try let users = get_online_users st.state in
+    let res' = Some
+      {userid = uid; cmd = "c"; success = true; info = SList users; chatid = -1}
+    in {st with response = res'}
   with UpdateError err ->
-    {userid = uid; cmd = "c"; success = false; info = String err; chatid = -1}
+    let res' = Some
+      {userid = uid; cmd = "c"; success = false; info = String err; chatid = -1}
+    in {st with response = res'}
 
-let join_chat uid chatname =
-  let chatid = get_chatid !st chatname in
-  try st := add_user_to_pub_chat !st uid chatid;
-        {userid = uid; cmd = "g"; success = true;
-         info = String (chatname); chatid = chatid}
+let join_chat st uid chatname =
+  try let chatid = get_chatid st.state chatname in
+    let state' = add_user_to_pub_chat st.state uid chatid in
+    let res' = Some {userid = uid; cmd = "g"; success = true;
+                info = String (chatname); chatid = chatid} in
+    {st with state = state'; response = res'}
   with UpdateError err ->
-    {userid = uid; cmd = "g"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "g"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let leave_chat uid chatname =
-  let chatid = get_chatid !st chatname in
-  try st := remove_from_chat !st uid chatid;
-    {userid = uid; cmd = "h"; success = true;
-     info = String (chatname); chatid = chatid}
+let leave_chat st uid chatname =
+  try let chatid = get_chatid st.state chatname in
+    let state' = remove_from_chat st.state uid chatid in
+    let res' = Some {userid = uid; cmd = "h"; success = true;
+                     info = String (chatname); chatid = chatid} in
+    {st with state = state'; response = res'}
   with UpdateError err ->
-    {userid = uid; cmd = "h"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "h"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let create_user username r w =
+let create_user st username r w =
   print_string "creating new user\n";
-  let new_uid = next_uid () in
-  try st := add_user !st new_uid username;
-    st := add_user_to_pub_chat !st new_uid 0;
-    st := add_conn !st new_uid (r,w);
-    {userid = new_uid; cmd = "f"; success = true; info = Nil; chatid = 0}
+  let new_uid = st.uid + 1 in
+  try let state1 = add_user st.state new_uid username in
+    let state2 = add_user_to_pub_chat state1 new_uid 0 in
+    let state3 = add_conn state2 new_uid (r,w) in
+    let res' = Some {userid = new_uid; cmd = "f"; success = true; info = Nil;
+                     chatid = 0} in
+    {st with state = state3; response = res'; uid = new_uid}
   with UpdateError err ->
-    let _ = prev_uid () in
-    {userid = -1; cmd = "f"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = -1; cmd = "f"; success = false; info = String err;
+                     chatid = -1} in
+    {st with response = res'}
 
 (* does nothing if server broadcasting to disconnected client *)
-let rec broadcast_to_chat uid (chatid, msg) =
+let rec broadcast_to_chat st uid (chatid, msg) =
   print_string ("broadcasting to chat " ^ string_of_int chatid ^ "\n");
-  let conn_lst = get_conns_of_chat !st chatid uid in
-  List.iter (iter_helper chatid msg uid) conn_lst
+  let conn_lst = get_conns_of_chat st.state chatid uid in
+  List.fold_left (iter_helper chatid msg uid) st conn_lst
 
-and iter_helper chatid msg uid (conn_uid,(_,w)) =
+and iter_helper chatid msg uid st (conn_uid,(_,w)) =
   print_string (string_of_int conn_uid ^ ": ");
   let res_msg = string_of_response
      {userid = conn_uid; cmd = "j"; success = true;
       info = String msg; chatid = chatid} in
   print_string (res_msg ^ "\n");
-  if Writer.is_open w then Writer.write w (res_msg ^"\n")
-  else disconnected_client uid conn_uid
+  if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
+  else disconnected_client st uid conn_uid
 
-and disconnected_client uid conn_uid =
-  if uid = 0 then () (* server is broadcasting *)
+and disconnected_client st uid conn_uid =
+  if uid = 0 then st (* server is broadcasting *)
   else
     (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected\n");
-     handle_disconnect conn_uid)
+     handle_disconnect st conn_uid)
 
-and handle_disconnect uid =
-  try let user_chats = get_chats_of_uid !st uid in
-    let username = get_username !st uid in
+and handle_disconnect st uid =
+  try let user_chats = get_chats_of_uid st.state uid in
+    let username = get_username st.state uid in
     let msg = username ^ " has left." in
-    List.iter
-      (fun cid ->
-         st := add_msg !st 0 (cid, msg);
-         broadcast_to_chat 0 (cid,msg)
-      ) user_chats;
-    st := remove_user !st uid; ()
-  with UpdateError err -> print_string err; ()
+    let view_state' = List.fold_left
+      (fun state cid ->
+         (*st := add_msg !st 0 (cid, msg);*)
+         broadcast_to_chat st 0 (cid,msg)
+      ) st user_chats in
+    let state' = remove_user view_state'.state uid in
+    {view_state' with state = state'}
+  with UpdateError err -> print_string err; st
 
 (* msg stored includes username *)
-let send_msg uid (chatid, msg) =
+let send_msg st uid (chatid, msg) =
   print_string ("msg received: " ^ msg ^ "\n");
-  try let username = get_username !st uid in
+  try let username = get_username st.state uid in
     let new_msg = username ^ ": " ^ msg in
-    st := add_msg !st uid (chatid, new_msg);
+    let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
-    ignore (broadcast_to_chat uid (chatid, new_msg));
-    {userid = uid; cmd = "a"; success = true; info = Nil; chatid = chatid}
+    let view_state = {st with state = state'} in
+    let view_state' = broadcast_to_chat view_state uid (chatid, new_msg) in
+    let res' = Some {userid = uid; cmd = "a"; success = true; info = Nil;
+                     chatid = chatid} in
+    {view_state' with response = res'}
   with UpdateError err ->
     print_string ("send msg error: " ^ err);
-    {userid = uid; cmd = "a"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "a"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let get_history uid chatid =
-  try let history = get_history !st chatid in
-    {userid = uid; cmd = "b"; success = true; info = ISList history;
-     chatid = chatid}
+let get_history st uid chatid =
+  try let history = get_history st.state chatid in
+    let res' = Some {userid = uid; cmd = "b"; success = true; info = ISList history;
+                     chatid = chatid} in
+    {st with response = res'}
   with UpdateError err ->
-    {userid = uid; cmd = "b"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "b"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let create_private_chat uid username =
-  let uid2 = get_uid !st username in
-  let new_chatid = next_chatid () in
-  try st := add_priv_chat !st uid uid2 new_chatid;
-    {userid = uid; cmd = "d"; success = true;
-     info = ISTuple (new_chatid, username); chatid = new_chatid}
+let create_private_chat st uid username =
+  try let uid2 = get_uid st.state username in
+    let new_chatid = st.chatid + 1 in
+    let state' = add_priv_chat st.state uid uid2 new_chatid in
+    let res' = Some {userid = uid; cmd = "d"; success = true;
+                     info = ISTuple (new_chatid, username); chatid = new_chatid}
+    in {st with response = res'; state = state'; chatid = new_chatid}
   with UpdateError err ->
-    let _ = prev_chatid () in
-    {userid = uid; cmd = "d"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "d"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let create_pub_chat uid chatname =
-  let new_chatid = next_chatid () in
-  try st := add_pub_chat !st uid new_chatid chatname;
-    {userid = uid; cmd = "e"; success = true;
-     info = ISTuple (new_chatid, chatname); chatid = new_chatid}
+let create_pub_chat st uid chatname =
+  let new_chatid = st.chatid + 1 in
+  try let state' = add_pub_chat st.state uid new_chatid chatname in
+    let res' = Some {userid = uid; cmd = "e"; success = true;
+                     info = ISTuple (new_chatid, chatname); chatid = new_chatid}
+    in {st with response = res'; state = state'}
   with UpdateError err ->
-    let _ = prev_chatid () in
-    {userid = uid; cmd = "e"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "e"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let get_public_chat uid =
-  try let pub_chats = get_pub_chats !st in
-    {userid = uid; cmd = "i"; success = true; info = SList pub_chats;
-     chatid = -1}
+let get_public_chat st uid =
+  try let pub_chats = get_pub_chats st.state in
+    let res' = Some {userid = uid; cmd = "i"; success = true;
+                     info = SList pub_chats; chatid = -1} in
+    {st with response = res'}
   with UpdateError err ->
-  {userid = uid; cmd = "i"; success = false; info = String err; chatid = -1}
+    let res' = Some {userid = uid; cmd = "i"; success = false;
+                     info = String err; chatid = -1} in
+    {st with response = res'}
 
-let parse str r w =
+let parse st str r w =
   let input = input_of_string str in
   let res = match input.cmd with
-    | Create_user s -> create_user s r w
-    | Send_msg tup -> send_msg input.userid tup
-    | Get_public_chats -> get_public_chat input.userid
-    | Get_online_users -> get_users input.userid
-    | Join_chat s -> join_chat input.userid s
-    | Get_history chatid -> get_history input.userid chatid
-    | Create_priv_chat username -> create_private_chat input.userid username
-    | Create_pub_chat chatname -> create_pub_chat input.userid chatname
-    | Leave_chat chatname -> leave_chat input.userid chatname in
-  string_of_response res
-
-(*let parse x = print_string ("parsing " ^ x); (x ^ "vvv")*)
-let handle_connection _addr r w =
-  let () = print_string ("New client \n") in
-  let rec loop r w =
-    Reader.read_line r >>= function
-    | `Eof -> (printf "Error reading server\n"; return ())
-    | `Ok line -> (print_endline ("received: " ^ line);
-                   Writer.write_line w (parse line r w);
-                   loop r w)
-in loop r w
-  (*Pipe.transfer (Reader.pipe r) (Writer.pipe w)
-    (fun x -> parse x)*)
-
-let quit_regex = Str.regexp {|^#quit\(;;\)?$|}
-
-let matches s r =
-  Str.string_match r s 0
-
-let handle_stdin input =
-  if matches input quit_regex then let _ = exit 0 in ()
-  else print_string "Invalid command\n"; ()
-
-let rec read_cmdline () =
-  let stdin : Reader.t = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= fun res -> ignore(
-    begin
-      match res with
-      | `Ok str -> return (handle_stdin str)
-      | `Eof ->  return ()
-    end);
-  ignore (read_cmdline());
-  Deferred.never ()
-
-let create_tcp ~port =
-  let host_and_port =
-    Tcp.Server.create
-      ~on_handler_error:`Raise
-      (Tcp.on_port port)
-      (fun _addr r w -> handle_connection _addr r w) in
-  ignore (host_and_port : (Socket.Address.Inet.t, int) Tcp.Server.t Deferred.t);
-  Deferred.never ()
-
-let run ~port =
-  ignore (read_cmdline ());
-  ignore (create_tcp port);
-  Deferred.never ()
-
-let main () =
-  print_string "Starting chat server... \n";
-  print_string "Enter \"#quit\" to shutdown the server. \n";
-  print_string  "> ";
-  Command.async
-    ~summary:"Start the chat server"
-    Command.Spec.(
-      empty
-      +> flag "-port" (optional_with_default 9999 int)
-        ~doc:" Port to listen on (default 9999)"
-    )
-    (fun port () -> run ~port)
-  |> Command.run
-
-let () = main ()
+    | Create_user s -> create_user st s r w
+    | Send_msg tup -> send_msg st input.userid tup
+    | Get_public_chats -> get_public_chat st input.userid
+    | Get_online_users -> get_users st input.userid
+    | Join_chat s -> join_chat st input.userid s
+    | Get_history chatid -> get_history st input.userid chatid
+    | Create_priv_chat username ->
+      create_private_chat st input.userid username
+    | Create_pub_chat chatname -> create_pub_chat st input.userid chatname
+    | Leave_chat chatname -> leave_chat st input.userid chatname in
+  match res.response with
+  | None -> failwith "impossible"
+  | Some s -> string_of_response s
