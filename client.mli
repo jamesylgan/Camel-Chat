@@ -6,16 +6,21 @@
  * - [print] contians the stirng that should be printed out based on the user's
  *   most recent command.
  *)
-type state = {
-  userid : int;
-  curr_chat : string * int;
-  chats : (string * int) list;
-  print: string list;
-}
+type state
 
 (* [init_state ()] returns the initial [state] for a client before initializing
  * a username. *)
 val init_state : unit -> state
+
+(* [get_userid st] returns the userid of a user in state [st]. *)
+val get_userid : state -> int
+
+(* [get_curr_chat st] returns the current chat name of a user in state [st]. *)
+val get_curr_chat : state -> string
+
+(* [get_print st] returns the string list that should be printed for a user
+ * in state [st]. *)
+val get_print : state -> string list
 
 (* [get_chats st] returns a list of the chat names which a user in state
  * [st] has available. *)

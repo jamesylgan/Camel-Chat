@@ -104,7 +104,7 @@ let parse_receive_tests = [
 (* Test cases on response "receive_msg". *)
   "RECEIVE_MSG1" >:: (fun _ -> assert_equal {st1 with print = []}
                          (parse_receive "s: j, 1:1, 2:42, 14:Hi everyone :D" st1));
-  "RECEIVE_MSG2" >:: (fun _ -> assert_equal {st2 with print = "Hi everyone :D"}
+  "RECEIVE_MSG2" >:: (fun _ -> assert_equal {st2 with print = ["Hi everyone :D"]}
                          (parse_receive "s: j, 1:1, 2:42, 14:Hi everyone :D" st2));
 (* Test cases on response "failure". *)
   "FAILURE1" >:: (fun _ -> assert_equal {st1 with print = ["#CREATE_PUB_CHAT failed: Chat name already taken :("]}
@@ -113,7 +113,7 @@ let parse_receive_tests = [
                      (parse_receive "f: g, 35:The intended chat is not available." st2));
 ]
 
-let suite = "Client test suite" >::: List.flatten [parse_create_user_tests; 
+let suite = "Client test suite" >::: List.flatten [parse_create_user_tests;
                                                    parse_send_tests;
                                                   parse_receive_tests]
 

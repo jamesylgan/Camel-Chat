@@ -13,6 +13,12 @@ let init_state () =
     print = [];
   }
 
+let get_userid st = st.userid
+
+let get_curr_chat st = st.curr_chat |> fst
+
+let get_print st = st.print
+
 let get_chats st = st.chats |> List.map fst
 
 let parse_create_user s =
