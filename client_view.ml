@@ -1,4 +1,3 @@
-open Core
 open Async
 open Client
 
@@ -16,9 +15,14 @@ let rec read r =
 
 and handle_res res r =
   match res with
-  | "#currchat" -> print_string (get_curr_chat !st); read r
-  | "#mychats" -> print_string ( ""); read r
+  | "#currchat" -> print_endline (get_curr_chat !st); read r
+  | "#mychats" ->
+    let chats = get_chats !st in
+    print_endline (String.concat ", " chats); read r
+  | "#quit" -> exit 0
+  | "#help" -> print_string ("help message here\n"); read r
   | res ->
+    let change_chat = Str.regexp "#goto \\(.+\\)" in
     st := parse_receive res !st;
     (*print_endline line;*)
     print ();
