@@ -1,4 +1,3 @@
-open Data
 open State
 
 (* typically an int or string or string list depending on implementation *)

@@ -12,7 +12,14 @@ let rec read r =
   Reader.read_line r >>= function
   | `Eof -> (printf "Server error, please try again. \n"; exit 0;)
   | `Ok line ->
-    st := parse_receive line !st;
+    handle_res line r
+
+and handle_res res r =
+  match res with
+  | "#currchat" -> print_string (get_curr_chat !st); read r
+  | "#mychats" -> print_string ( ""); read r
+  | res ->
+    st := parse_receive res !st;
     (*print_endline line;*)
     print ();
     read r
