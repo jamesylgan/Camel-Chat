@@ -1,2 +1,2 @@
-hello\n
+hello
 gg

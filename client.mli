@@ -6,12 +6,7 @@
  * - [print] contians the stirng that should be printed out based on the user's
  *   most recent command.
  *)
-type state = {
-  userid : int;
-  curr_chat : string * int;
-  chats : (string * int) list;
-  print: string list;
-}
+type state
 
 (* [init_state ()] returns the initial [state] for a client before initializing
  * a username. *)
