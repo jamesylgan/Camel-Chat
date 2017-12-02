@@ -2,7 +2,7 @@ open State
 
 (* typically an int or string or string list depending on implementation *)
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list 
+            Int of int | SList of string list
 
 (* [command] is the type of commands that can be called from the client *)
 type command =
@@ -35,7 +35,8 @@ type view_state = {
   state : State.state;
   uid : int;
   chatid : int;
-  response: response option
+  response: response option;
+  res_string : string
 }
 
 val init_state: unit -> view_state
@@ -49,7 +50,7 @@ val string_of_response: response -> string
 
 (* [parse str r w] passes the string [str] that was received from server and
  * returns sstringified response to client *)
-val parse: view_state -> string -> Async.Reader.t -> Async.Writer.t -> string
+val parse: view_state -> string -> Async.Reader.t -> Async.Writer.t -> view_state
 
 (* [join_chat st uid chatname cmd] adds userid to pub_chat_list in [st.state].
  * Returns the response of the server. *)

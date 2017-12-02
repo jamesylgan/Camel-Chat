@@ -1,11 +1,7 @@
 open Async
 open Server
 
-type view_state = {
-  state : State.state;
-  uid : int;
-  chatid : int;
-}
+let st = ref (init_state ())
 
 (*let uid = ref (0)
 let next_uid = fun () -> uid := (!uid) + 1; !uid
@@ -14,13 +10,14 @@ let chatid = ref (0)
 let next_chatid = fun () -> chatid := (!chatid) + 1; !chatid
 let prev_chatid = fun () -> chatid := (!chatid) - 1; !chatid *)
 
-let handle_connection st _addr r w =
+let handle_connection _addr r w =
   let () = print_string ("New client \n") in
   let rec loop r w =
     Reader.read_line r >>= function
     | `Eof -> (printf "Error reading server\n"; return ())
     | `Ok line -> (print_endline ("received: " ^ line);
-                   Writer.write_line w (parse st line r w);
+                   st := parse !st line r w;
+                   Writer.write_line w (!st.res_string);
                    loop r w)
   in loop r w
 (*Pipe.transfer (Reader.pipe r) (Writer.pipe w)
@@ -47,12 +44,11 @@ let rec read_cmdline () =
   Deferred.never ()
 
 let create_tcp ~port =
-  let st = init_state () in
   let host_and_port =
     Tcp.Server.create
       ~on_handler_error:`Raise
       (Tcp.on_port port)
-      (fun _addr r w -> handle_connection st _addr r w) in
+      (fun _addr r w -> handle_connection _addr r w) in
   ignore (host_and_port : (Socket.Address.Inet.t, int) Tcp.Server.t Deferred.t);
   Deferred.never ()
 

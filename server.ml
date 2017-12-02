@@ -32,14 +32,16 @@ type view_state = {
   state : State.state;
   uid : int;
   chatid : int;
-  response: response option
+  response: response option;
+  res_string : string
 }
 
 let init_state () = {
   state = init_state ();
   uid = 0;
   chatid = 0;
-  response = None
+  response = None;
+  res_string = ""
 }
 
 (* A helper function that returns the index of last colon in a "client
@@ -335,4 +337,4 @@ let parse st str r w =
     | Leave_chat chatname -> leave_chat st input.userid chatname in
   match res.response with
   | None -> failwith "impossible"
-  | Some s -> string_of_response s
+  | Some s -> {res with res_string = string_of_response s}
