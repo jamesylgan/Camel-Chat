@@ -4,26 +4,15 @@ open Client
 let st = ref (init_state ())
 
 let print () =
-  if !st.print <> []
-  then List.iter !st.print (fun x -> print_string (x ^ "\n")); ()
+  let to_print = get_print !st in
+  if to_print <> []
+  then List.iter (fun x -> print_string (x ^ "\n")) to_print; ()
 
 let rec read r =
   Reader.read_line r >>= function
   | `Eof -> (printf "Server error, please try again. \n"; exit 0;)
   | `Ok line ->
-    handle_res line r
-
-and handle_res res r =
-  match res with
-  | "#currchat" -> print_endline (get_curr_chat !st); read r
-  | "#mychats" ->
-    let chats = get_chats !st in
-    print_endline (String.concat ", " chats); read r
-  | "#quit" -> exit 0
-  | "#help" -> print_string ("help message here\n"); read r
-  | res ->
-    let change_chat = Str.regexp "#goto \\(.+\\)" in
-    st := parse_receive res !st;
+    st := parse_receive line !st;
     (*print_endline line;*)
     print ();
     read r
@@ -35,11 +24,34 @@ let rec send_msg w =
   | `Ok line ->
     Writer.write_line w (parse_send line !st); send_msg w
 
+and handle_stdin res w =
+  match res with
+  | "#currchat" -> print_endline (get_curr_chat !st); send_msg w
+  | "#mychats" ->
+    let chats = get_chats !st in
+    print_endline (String.concat ", " chats); send_msg w
+  | "#quit" -> exit 0
+  | "#help" -> print_string ("help message here\n"); send_msg w
+  | res ->
+    let change_chat = Str.regexp "#goto \\(.+\\)" in
+    if Str.string_match change_chat res 0 then (handle_change_chat res; send_msg w)
+    else (Writer.write_line w (parse_send res !st); send_msg w)
+
+and handle_change_chat s =
+  let open String in
+  let start = index s ' ' in
+  let length = length s in
+  let chatname = sub s start (length - start) in
+  st := change_chat chatname !st;
+  print ()
+
 let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; create_user r w)
   | `Ok line ->
+    (* JAMES TODO: check is username is invalid: empty or have spaces. If
+       invalid then print error and call create user again; else continue *)
     Writer.write_line w (parse_create_user line);
     read_create_username r w
 
@@ -53,7 +65,7 @@ and read_create_username r w =
 and handle_create_user res r w =
   st := parse_receive res !st;
   print ();
-  if !st.userid = -1 then (print_string "> "; create_user r w) else return ()
+  if (get_userid !st) = -1 then (print_string "> "; create_user r w) else return ()
 
 let rw_loop r w =
   don't_wait_for (send_msg w);
