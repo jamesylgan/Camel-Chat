@@ -50,9 +50,16 @@ let rec create_user r w =
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; create_user r w)
   | `Ok line ->
-    (* JAMES TODO: check is username is invalid: empty or have spaces. If
-       invalid then print error and call create user again; else continue *)
-    Writer.write_line w (parse_create_user line);
+    let is_some =
+      begin match String.index_opt line ' ' with
+      | Some x -> true
+      | None -> false
+    end in
+    if is_some
+    then (printf "Error invalid characters in username\n"; create_user r w)
+    else if String.length line = 0
+    then (printf "Error empty username input\n"; create_user r w)
+    else Writer.write_line w (parse_create_user line);
     read_create_username r w
 
 and read_create_username r w =

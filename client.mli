@@ -6,7 +6,12 @@
  * - [print] contians the stirng that should be printed out based on the user's
  *   most recent command.
  *)
-type state
+type state = {
+  userid : int;
+  curr_chat : string * int;
+  chats : (string * int) list;
+  print: string list;
+}
 
 (* [init_state ()] returns the initial [state] for a client before initializing
  * a username. *)
@@ -29,6 +34,12 @@ val get_chats : state -> string list
 (* [change_chat s st] returns the updated state when a user a state [st]
  * requests to switch to a chat by the name [s]. *)
 val change_chat : string -> state -> state
+
+(* [check_chat c st] checks if an user input [c] requests a legitimate name
+ * for chat-related commands. If the chat name is illegit then a new state
+ * with error message is returned, otherwise the original [st] is returned.
+ *)
+val check_chat : string -> state -> state
 
 (* [parse_create_user s] returns the "client output" string for creating
  * the username [s]. *)

@@ -34,7 +34,7 @@ let parse_create_user_tests = [
 
 let parse_send_tests = [
   (* Test cases on command "get history". *)
-  "Get history1" >:: (fun _ -> assert_equal "b, 1:1, 1:1" (parse_send "#history" st1));
+  "Get history1" >:: (fun _ -> assert_equal "b, 1:1, 1:0" (parse_send "#history" st1));
   "Get history2" >:: (fun _ -> assert_equal "b, 2:10, 2:42" (parse_send "#history" st2));
   (* Test cases on command "create private chat". *)
   "Create priv chat1" >:: (fun _ -> assert_equal "d, 1:1, 8:Clarkson" (parse_send "#chatwith Clarkson" st1));
@@ -64,7 +64,7 @@ let parse_send_tests = [
 let parse_receive_tests = [
   (* Test cases on response "send_msg". *)
   "SEND_MSG1" >:: (fun _ -> assert_equal st1 (parse_receive "s: a, 1:0" st1));
-  "SEND_MSG2" >:: (fun _ -> assert_equal st2 (parse_receive "s: a, 2:10" st2));
+  "SEND_MSG2" >:: (fun _ -> assert_equal {st2 with print = []} (parse_receive "s: a, 2:10" st2));
   (* Test cases on response "get_history". *)
   "GET_HISTORY0" >:: (fun _ -> assert_equal {st1 with print = []}
                          (parse_receive "s: b, 1:1, 0:" st1));

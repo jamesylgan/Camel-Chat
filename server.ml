@@ -2,7 +2,7 @@ open State
 open Async
 
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list | ISTuple of (int * string)
+            Int of int | SList of string list
 
 type command =
   | Create_user of string (* username *)
@@ -144,25 +144,26 @@ let rec string_of_response res =
         | [] -> str
         | (junk_uid, h)::t -> formlist t (str ^ (length h |> string_of_int) ^ ":" ^ h)
       end in formlist x ""
-    | ISTuple (c_id, c_name) -> ", " ^ (c_id |> string_of_int
-                                      |> length |> string_of_int)
-                              ^ ":" ^ (c_id |> string_of_int)
-                              ^ ", " ^ (c_name |> length |> string_of_int)
-                              ^ ":" ^ (c_name)
     | _ -> failwith "Don't use this not on info" end in
   begin match res.success with
   | true -> create_success res uid cid sl_len extract_info
   | false -> "f: " ^ res.cmd ^ ", "
              ^ (length (extract_info res.info) |> string_of_int) ^ ":"
              ^ (extract_info res.info) end
-and create_success res uid cid sl_len extract_info = begin match res.cmd with
+and create_success res uid cid sl_len extract_info =
+  let open String in
+  begin match res.cmd with
   | "a" -> "s: a" ^ uid
   | "b" -> "s: b" ^ uid ^ ", " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
   | "c" -> "s: c, " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
-  | "d" -> "s: d" ^ uid ^ cid ^ (extract_info res.info)
-  | "e" -> "s: e" ^ uid ^ cid ^ (extract_info res.info)
+  | "d" -> "s: d" ^ uid ^ cid ^ ", "
+           ^ ((extract_info res.info) |> length |> string_of_int)
+           ^ ":" ^ (extract_info res.info)
+  | "e" -> "s: e" ^ uid ^ cid ^ ", "
+           ^ ((extract_info res.info) |> length |> string_of_int)
+           ^ ":" ^ (extract_info res.info)
   | "f" -> "s: f" ^ uid
   | "g" -> "s: g" ^ uid ^ cid ^ ", "
            ^ ((String.length (extract_info res.info) |> string_of_int)
@@ -172,7 +173,7 @@ and create_success res uid cid sl_len extract_info = begin match res.cmd with
               ^ ":" ^ (extract_info res.info))
   | "i" -> "s: i" ^ uid ^ ", " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
-  | "j" -> "s: j" ^ uid ^ cid ^ ", " ^ ", "
+  | "j" -> "s: j" ^ uid ^ cid ^ ", "
            ^ ((String.length (extract_info res.info) |> string_of_int)
               ^ ":" ^ (extract_info res.info))
   | _ -> failwith "Invalid input command"
@@ -282,8 +283,8 @@ let get_history st uid chatid =
                      chatid = chatid} in
     {st with response = res'}
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "b"; success = false;
-                     info = String err; chatid = -1} in
+let res' = Some {userid = uid; cmd = "b"; success = false;
+                 info = String err; chatid = -1} in
     {st with response = res'}
 
 let create_private_chat st uid username =
@@ -291,7 +292,7 @@ let create_private_chat st uid username =
     let new_chatid = st.chatid + 1 in
     let state' = add_priv_chat st.state uid uid2 new_chatid in
     let res' = Some {userid = uid; cmd = "d"; success = true;
-                     info = ISTuple (new_chatid, username); chatid = new_chatid}
+                     info = String (username); chatid = new_chatid}
     in {st with response = res'; state = state'; chatid = new_chatid}
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "d"; success = false;
@@ -302,7 +303,7 @@ let create_pub_chat st uid chatname =
   let new_chatid = st.chatid + 1 in
   try let state' = add_pub_chat st.state uid new_chatid chatname in
     let res' = Some {userid = uid; cmd = "e"; success = true;
-                     info = ISTuple (new_chatid, chatname); chatid = new_chatid}
+                     info = String (chatname); chatid = new_chatid}
     in {st with response = res'; state = state'}
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "e"; success = false;

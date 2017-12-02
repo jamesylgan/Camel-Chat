@@ -2,7 +2,7 @@ open State
 
 (* typically an int or string or string list depending on implementation *)
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list | ISTuple of (int * string)
+            Int of int | SList of string list 
 
 (* [command] is the type of commands that can be called from the client *)
 type command =
@@ -23,7 +23,13 @@ type client_input = {
 }
 
 (* [response] is the message that the server sends to the client *)
-type response
+type response = {
+  userid: int;
+  cmd: string;
+  success: bool;
+  info: info;
+  chatid: int
+}
 
 type view_state = {
   state : State.state;

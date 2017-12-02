@@ -31,6 +31,26 @@ let change_chat s st =
     print = ["Your request is accepted! Switching to " ^ s ^ "..."];
   }
 
+let check_chat s st =
+  let open String in
+  let join_chat = Str.regexp "#join \\(.+\\)" in
+  let priv_chat = Str.regexp "#chatwith \\(.+\\)" in
+  let pub_chat = Str.regexp "#makechat \\(.+\\)" in
+  let leave_chat = Str.regexp "#leave \\(.+\\)" in
+  if (Str.string_match priv_chat s 0) || (Str.string_match pub_chat s 0)
+  then let name = sub s 10 ((length s) - 10) in
+    if not (contains name ' ') then st
+    else {st with print = ["Error: Please initiate a chat name without space!"]}
+  else if (Str.string_match join_chat s 0)
+  then let name = sub s 6 ((length s) - 6) in
+    if not (List.mem_assoc name st.chats) then st
+    else {st with print = ["Error: Chat already joined !"]}
+  else if (Str.string_match leave_chat s 0)
+  then let name = sub s 7 ((length s) - 7) in
+    if (List.mem_assoc name st.chats) then st
+    else {st with print = ["Error: Cannot leave a chat not in current chat list!"]}
+  else st
+
 let parse_create_user s =
   "f, " ^ (String.length s |> string_of_int) ^ ":" ^ s
 
