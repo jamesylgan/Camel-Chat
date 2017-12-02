@@ -59,8 +59,6 @@ let rec create_user r w =
     then (printf "Error invalid characters in username\n"; create_user r w)
     else if String.length line = 0
     then (printf "Error empty username input\n"; create_user r w)
-    (* JAMES TODO: line is username. check is username is invalid: empty or have spaces. If
-       invalid then print error and call create user again; else continue *)
     else Writer.write_line w (parse_create_user line);
     read_create_username r w
 
