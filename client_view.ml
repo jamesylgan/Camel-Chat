@@ -59,8 +59,8 @@ let rec create_user r w =
     then (printf "Error invalid characters in username\n"; create_user r w)
     else if String.length line = 0
     then (printf "Error empty username input\n"; create_user r w)
-    else Writer.write_line w (parse_create_user line);
-    read_create_username r w
+    else (Writer.write_line w (parse_create_user line);
+          read_create_username r w)
 
 and read_create_username r w =
   Reader.read_line r >>= function
