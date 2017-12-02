@@ -6,7 +6,7 @@
  * - [print] contians the stirng that should be printed out based on the user's
  *   most recent command.
  *)
-type state 
+type state
 
 (* [init_state ()] returns the initial [state] for a client before initializing
  * a username. *)
