@@ -155,7 +155,7 @@ and create_success res uid cid sl_len extract_info = begin match res.cmd with
            ^ ":" ^ (extract_info res.info)
   | "c" -> "s: c, " ^ (sl_len res.info |> string_of_int)
            ^ ":" ^ (extract_info res.info)
-  | "d" -> "s: d" ^ uid ^ cid ^ (extract_info res.info)
+  | "d" -> "s: d" ^ uid ^ (extract_info res.info)
   | "e" -> "s: e" ^ uid ^ cid ^ (extract_info res.info)
   | "f" -> "s: f" ^ uid
   | "g" -> "s: g" ^ uid ^ cid ^ ", "
@@ -359,4 +359,4 @@ let main () =
     (fun port () -> run ~port)
   |> Command.run
 
-let () = main ()
+(*let () = main ()*)
