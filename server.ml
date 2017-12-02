@@ -87,8 +87,8 @@ let input_of_string s =
     let last_comma = snd_c + mes_len + 1 in
       {userid = (response_uid s);
        cmd = Send_msg (find_chat_id s,
-                            (sub s 0 last_comma)
-                            |> find_chat_name)}
+                       (sub s (snd_c+1) (last_comma-snd_c -1)))
+                            }
   end
   | 'b' -> {userid = (response_uid s); cmd = Get_history (find_chat_id s)}
   | 'c' -> {userid = (response_uid s); cmd = Get_online_users}
