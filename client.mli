@@ -12,6 +12,20 @@ type state
  * a username. *)
 val init_state : unit -> state
 
+(* [get_userid st] returns the userid of a user in state [st]. *)
+val get_userid : state -> int
+
+(* [get_curr_chat st] returns the current chat name of a user in state [st]. *)
+val get_curr_chat : state -> string
+
+(* [get_print st] returns the string list that should be printed for a user
+ * in state [st]. *)
+val get_userid : state -> string list
+
+(* [get_chats st] returns a list of the chat names which a user in state
+ * [st] has available. *)
+val get_chats : state -> string list
+
 (* [parse_create_user s] returns the "client output" string for creating
  * the username [s]. *)
 val parse_create_user : string -> string

@@ -13,6 +13,14 @@ let init_state () =
     print = [];
   }
 
+let get_userid st = st.userid
+
+let get_curr_chat st = st.curr_chat |> fst
+
+let get_print st = st.print
+
+let get_chats st = st.chats |> List.map fst
+
 let parse_create_user s =
   "f, " ^ (String.length s |> string_of_int) ^ ":" ^ s
 
@@ -121,7 +129,9 @@ let parse_receive s st =
         let snd_c = index_from s 2 ':' in
         let trd_c = index_from s (snd_c + 1) ':' in
         let pub_chats = sub s (trd_c + 1) ((length s) - trd_c - 1) in
-        {st with print = extract pub_chats []}
+        if (extract pub_chats []) <> [] then
+          {st with print = extract pub_chats []}
+        else {st with print = ["No public chats available currently."]}
       end
     (*Response strings involving <len of chatid>:<chatid>*)
     | others ->
