@@ -26,6 +26,10 @@ val get_print : state -> string list
  * [st] has available. *)
 val get_chats : state -> string list
 
+(* [change_chat s st] returns the updated state when a user a state [st]
+ * requests to switch to a chat by the name [s]. *)
+val change_chat : string -> state -> state
+
 (* [parse_create_user s] returns the "client output" string for creating
  * the username [s]. *)
 val parse_create_user : string -> string
