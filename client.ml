@@ -21,6 +21,16 @@ let get_print st = st.print
 
 let get_chats st = st.chats |> List.map fst
 
+let change_chat s st =
+  if not (List.mem_assoc s st.chats) then
+    {st with print = ["#CHANGE_CHAT failed: Chat not available."]}
+  else {
+    userid = st.userid;
+    curr_chat = (s, (List.assoc s st.chats));
+    chats = st.chats;
+    print = ["Your request is accepted! Switching to " ^ s ^ "..."];
+  }
+
 let parse_create_user s =
   "f, " ^ (String.length s |> string_of_int) ^ ":" ^ s
 
