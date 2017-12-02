@@ -24,9 +24,9 @@ val string_of_response: response -> string
  * state *)
 val main: unit -> unit
 
-(* [parse str] passes the string [str] that was received from server and returns
- * stringified response to client *)
-val parse: string -> string
+(* [parse str r w] passes the string [str] that was received from server and
+ * returns sstringified response to client *)
+val parse: string -> Async.Reader.t -> Async.Writer.t -> string
 
 (* [join_chat uid chatname cmd] adds userid to pub_chat_list in [st]. Returns
  * the response of the server. *)
@@ -40,10 +40,10 @@ val join_chat: int -> string -> response
  *)
 val leave_chat: int -> string -> response
 
-(* [create_user username] initializes the username with a userid and adds the new
- * userid to user_list in [st]. Sends a response to the client and returns the
- * updated state. *)
-val create_user: string -> response
+(* [create_user username r w] initializes the username with a userid and adds
+ * the new userid to user_list in [st]. Adds (r,w) to current connections. Sends
+ * a response to the client and returns the updated state. *)
+val create_user: string -> Async.Reader.t -> Async.Writer.t -> response
 
 (* [handle_disconnect st uid] handles if a client of [uid] disconnects from the
  * server. It removes the disconnected [uid] from user_list and from all

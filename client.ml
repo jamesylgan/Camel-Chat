@@ -123,7 +123,9 @@ let parse_receive s st =
         let snd_c = index_from s 2 ':' in
         let trd_c = index_from s (snd_c + 1) ':' in
         let pub_chats = sub s (trd_c + 1) ((length s) - trd_c - 1) in
-        {st with print = extract pub_chats []}
+        if (extract pub_chats []) <> [] then
+          {st with print = extract pub_chats []}
+        else {st with print = ["No public chats available currently."]}
       end
     (*Response strings involving <len of chatid>:<chatid>*)
     | others ->

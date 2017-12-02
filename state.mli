@@ -28,10 +28,10 @@ val init_state: unit -> state
  * (both) public and private chats *)
 val get_chats_of_uid: state -> int -> int list
 
-(* [get_conns_of_chat st uid chatid] gets all uids
+(* [get_conns_of_chat st chatid uid] gets all uids and conn_uid <> uid
  * and are in st.pub_chat_list or st.priv_chat_list and then gets the (r,w)
  * tuple associated with the uids as listed in st.curr_conns *)
-val get_conns_of_chat: state -> int ->
+val get_conns_of_chat: state -> int -> int ->
   (int * (Async.Reader.t * Async.Writer.t)) list
 
 (* [get_priv_chats st] is st.priv_chat_lists *)

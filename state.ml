@@ -19,9 +19,9 @@ let init_state () = {
   curr_conns = [];
   user_list = [];
   priv_chat_list = [];
-  pub_chat_list = [];
+  pub_chat_list = [] |> insert 0 [];
   pub_chat_names = [] |> insert "Lobby" 0;
-  chat_msg = []
+  chat_msg = [] |> insert 0 []
 }
 
 let get_chats_of_uid st uid =
@@ -55,11 +55,11 @@ let get_users_of_chat st cid =
      if x = [] then raise (UpdateError "No users in chat") else x)
   with _-> raise (UpdateError "Error")
 
-let get_conns_of_chat st chatid =
+let get_conns_of_chat st chatid uid =
   try (
-  let uids = get_users_of_chat st chatid in
-  List.filter
-    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids) st.curr_conns)
+    let uids = get_users_of_chat st chatid in
+    List.filter
+    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids && conn_uid <> uid) st.curr_conns)
   with _ -> raise (UpdateError "Error")
 
 let get_history st cid =
