@@ -1,14 +1,26 @@
-open Data
 open State
 
 (* typically an int or string or string list depending on implementation *)
-type info
+type info = Nil | String of string | ISList of (int * string) list |
+            Int of int | SList of string list | ISTuple of (int * string)
 
 (* [command] is the type of commands that can be called from the client *)
-type command
+type command =
+  | Create_user of string (* username *)
+  | Send_msg of (int*string) (* chatid, msg*)
+  | Get_public_chats
+  | Get_online_users
+  | Join_chat of string (* chatname*)
+  | Get_history of int (* chatid *)
+  | Create_priv_chat of string (* username of other user *)
+  | Create_pub_chat of string (* chatname *)
+  | Leave_chat of string (* chatname *)
 
 (* [client_input] is the message that the server receives from the client *)
-type client_input
+type client_input = {
+  userid: int;
+  cmd: command;
+}
 
 (* [response] is the message that the server sends to the client *)
 type response
