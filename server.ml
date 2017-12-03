@@ -343,6 +343,7 @@ let rec create_private_chat st uid username =
     {st with response = res'}
 
 let create_pub_chat st uid chatname =
+  print
   let new_chatid = st.chatid + 1 in
   try let state' = add_pub_chat st.state uid new_chatid chatname in
     let res' = Some {userid = uid; cmd = "e"; success = true;
