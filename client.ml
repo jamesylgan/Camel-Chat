@@ -13,6 +13,13 @@ let init_state () =
     print = [];
   }
 
+let red = "\027[31m"
+let blue = "\027[34m"
+let green = "\027[32m"
+
+let color c lst = List.map (fun x -> c ^ x) lst
+
+
 let get_userid st = st.userid
 
 let get_curr_chat st = st.curr_chat |> fst
@@ -42,7 +49,7 @@ let check_chat s st =
   if (Str.string_match priv_chat s 0) || (Str.string_match pub_chat s 0)
   then let name = sub s 10 ((length s) - 10) in
     if not (contains name ' ') then st
-    else {st with print = ["Error: Please initiate a chat name without white spaces!"]}
+    else {st with print = ["Error: Please use a chat name without spaces!"]}
   else if (Str.string_match join_chat s 0)
   then let name = sub s 6 ((length s) - 6) |> String.lowercase_ascii in
     if not (List.mem_assoc name st.chats) then st
@@ -126,7 +133,7 @@ let parse_receive s st =
     let snd_c = index_from s 2 ':' in
     let mes = sub s (snd_c + 1) ((length s) - snd_c - 1) in
     let p = (get_c c_id) ^ " failed: " ^ mes in
-    {st with print = [p]}
+    {st with print = [red ^ p]}
   else let len_of_uid =
         sub s 6 ((index_from s 6 ':')-6)
         |> int_of_string in
@@ -137,15 +144,15 @@ let parse_receive s st =
         let snd_c = index_from s 2 ':' in
         let trd_c = index_from s (snd_c + 1) ':' in
         let his = sub s (trd_c + 1) (len - trd_c - 1) in
-        {st with print = (extract his [])}
+        {st with print = color green (extract his [])}
       end
     | 'c' -> begin
         let snd_c = index_from s 2 ':' in
         let user_num = sub s 6 (snd_c - 6) |> int_of_string in
         if user_num == 0 then
-          {st with print = ["No users online currently."]}
+          {st with print = [red ^ "No users online currently."]}
         else let users = sub s (snd_c + 1) ((length s) - snd_c -1) in
-          {st with print = extract users []}
+          {st with print = color green (extract users [])}
       end
     | 'f' -> begin
         let uid =
@@ -163,8 +170,8 @@ let parse_receive s st =
         let trd_c = index_from s (snd_c + 1) ':' in
         let pub_chats = sub s (trd_c + 1) ((length s) - trd_c - 1) in
         if (extract pub_chats []) <> [] then
-          {st with print = extract pub_chats []}
-        else {st with print = ["No public chats available currently."]}
+          {st with print = color green (extract pub_chats [])}
+        else {st with print = [red ^ "No public chats available currently."]}
       end
     (*Response strings involving <len of chatid>:<chatid>*)
     | others ->
@@ -180,18 +187,18 @@ let parse_receive s st =
           userid = st.userid;
           curr_chat = ("lobby", 0);
           chats = List.remove_assoc info st.chats;
-          print = ["Your request is confirmed. Returning to lobby..."]
+          print = [red ^ "Your request is confirmed. Returning to lobby..."]
         }
         | 'j' -> begin
           if ((snd st.curr_chat) <> chatid) then
             {st with print = []}
-          else {st with print = [info]}
+          else {st with print = color blue [info]}
         end
         | 'k' -> {
             userid = st.userid;
             curr_chat = st.curr_chat;
             chats = (info, chatid) :: st.chats;
-            print = [info ^ " has started a chat with you!"]
+            print = [green ^ info ^ red ^ " has started a chat with you!"]
           }
 (* d, e, g all give the same thing, assuming that the [curr_chatid]
   is automaticially swtiched to that of any newly created chat. *)

@@ -3,10 +3,17 @@ open Client
 
 let st = ref (init_state ())
 
+let b = "\027[0m"
+let red = "\027[31m"
+let green = "\027[32m"
+
+let printc_string c s = print_string (c ^ s ^ b)
+let printc_endline c s = print_endline (c ^ s ^ b)
+
 let print () =
   let to_print = get_print !st in
   if to_print <> []
-  then List.iter (fun x -> print_string (x ^ "\n")) to_print; ()
+  then List.iter (fun x -> print_string (x ^ b ^ "\n")) to_print; ()
 
 let rec read r =
   Reader.read_line r >>= function
@@ -25,12 +32,12 @@ let rec send_msg w =
 
 and handle_stdin res w =
   match res with
-  | "#currchat" -> print_endline (get_curr_chat !st); send_msg w
+  | "#currchat" -> printc_endline green (get_curr_chat !st); send_msg w
   | "#mychats" ->
     let chats = get_chats !st in
-    print_endline (String.concat ", " chats); send_msg w
+    printc_endline green (String.concat ", " chats); send_msg w
   | "#quit" -> exit 0
-  | "#help" -> print_string ("help message here\n"); send_msg w
+  | "#help" -> printc_string red ("help message here\n"); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
@@ -78,7 +85,7 @@ and read_create_username r w =
 and handle_create_user res r w =
   st := parse_receive res !st;
   print ();
-  if (get_userid !st) = -1 then (print_string "> "; create_user r w) else return ()
+  if (get_userid !st) = -1 then (printc_string red "> "; create_user r w) else return ()
 
 let rw_loop r w =
   don't_wait_for (send_msg w);
@@ -87,7 +94,7 @@ let rw_loop r w =
 
 let chat _ r w =
   create_user r w >>= fun () ->
-  print_string "Welcome to the lobby!\n";
+  printc_string red "Welcome to the lobby!\n";
   rw_loop r w;
   Deferred.never ()
 
@@ -97,9 +104,9 @@ let run ~host ~port =
   Deferred.never ()
 
 let main () =
-  print_string "Starting Caml Chat... \n";
-  print_string "Enter a username to begin: \n";
-  print_string "> ";
+  printc_string red "Starting Caml Chat... \n";
+  printc_string red "Enter a username to begin: \n";
+  printc_string red "> ";
   Command.async
     ~summary:"Start the chat client"
     Command.Spec.(
