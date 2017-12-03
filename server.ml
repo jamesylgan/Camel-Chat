@@ -349,6 +349,8 @@ let get_public_chat st uid =
     {st with response = res'}
 
 let parse st str r w =
+  let cmd_lst = Str.split (Str.regexp "$") str in
+  print_endline ("Cmds: "^(String.concat " && " cmd_lst));
   let input = input_of_string str in
   let res = match input.cmd with
     | Create_user s -> create_user st s r w

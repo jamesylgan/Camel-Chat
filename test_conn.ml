@@ -56,7 +56,7 @@ let chat _ r w =
 
 let rec read_file input output addr r w reader_line =
   Reader.read_line reader_line >>= function
-  | `Eof -> printf "Error reading server\n"; return ()
+  | `Eof -> printf "Error reading file\n"; return ()
   | `Ok line -> (print_endline ("once" ^line); read_file input output addr r w reader_line)
 
 let create_user_hardcode username r w =
@@ -71,20 +71,21 @@ let create_user_hardcode username r w =
 let send_cmd r w cmd =
   Writer.write_line w (parse_send cmd !st);
   Reader.read_line r >>= function
-  | `Eof -> (printf "Error reading server\n"; return ())
+  | `Eof -> return ()
   | `Ok line ->
     st := parse_receive line !st;
     print ();
     return ()
 
-let open_file addr r w  =
+let rec open_file addr r w  =
   Reader.file_contents "test1.txt"
   >>= fun text -> let lst = String.split text ~on:'\n' in
   match lst with
   | [] -> return ()
   | h::t ->
     print_endline h;
-    ignore(create_user_hardcode h r w);
+    create_user_hardcode h r w
+    >>= fun () -> List.iter lst (fun cmd -> ignore (send_cmd r w cmd));
     return ()
 (*Reader.open_file "test1.txt" >>= read_file input output addr r w*)
 
