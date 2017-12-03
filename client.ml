@@ -196,13 +196,16 @@ let parse_receive s st =
             userid = st.userid;
             curr_chat = st.curr_chat;
             chats = (chat_n, chatid) :: st.chats;
-            print = [green ^ chat_n ^ red ^ msg]
-          } else {
-            userid = st.userid;
-            curr_chat = st.curr_chat;
-            chats = st.chats;
-            print = [green ^ chat_n ^ red ^ msg]
-          }
+            print = [green ^ chat_n ^ red ^ msg];
+          } else
+              if chatid <> (st.curr_chat |> snd) then {st with print = []}
+              else
+            {
+              userid = st.userid;
+              curr_chat = st.curr_chat;
+              chats = st.chats;
+              print = [green ^ chat_n ^ red ^ msg];
+            }
         end
 (* d, e, g all give the same thing, assuming that the [curr_chatid]
   is automaticially swtiched to that of any newly created chat. *)
