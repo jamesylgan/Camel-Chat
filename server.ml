@@ -231,34 +231,38 @@ let create_user st username r w =
     {st with response = res'}
 
 (* does nothing if server broadcasting to disconnected client *)
-let rec broadcast_to_chat st uid (chatid, msg) =
+let rec broadcast_to_chat st uid (chatid, msg) msg_or_notif =
   print_string ("broadcasting to chat " ^ string_of_int chatid ^ "\n");
   let conn_lst = get_conns_of_chat st.state chatid uid in
+  let iter_helper chatid msg uid st (conn_uid,(_,w)) =
+    print_string (string_of_int conn_uid ^ ": ");
+    let res_msg =
+      match msg_or_notif with
+      | `MSG ->
+        string_of_response {userid = conn_uid; cmd = "j"; success = true;
+                                    info = String msg; chatid = chatid}
+      | `NOTIF s ->
+        string_of_response {userid = conn_uid; cmd = "k"; success = true;
+                            info = String s; chatid = chatid} in
+    print_string (res_msg ^ "\n");
+    if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
+    else disconnected_client st uid conn_uid msg_or_notif in
   List.fold_left (iter_helper chatid msg uid) st conn_lst
 
-and iter_helper chatid msg uid st (conn_uid,(_,w)) =
-  print_string (string_of_int conn_uid ^ ": ");
-  let res_msg = string_of_response
-     {userid = conn_uid; cmd = "j"; success = true;
-      info = String msg; chatid = chatid} in
-  print_string (res_msg ^ "\n");
-  if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
-  else disconnected_client st uid conn_uid
-
-and disconnected_client st uid conn_uid =
+and disconnected_client st uid conn_uid msg_or_notif =
   if uid = 0 then st (* server is broadcasting *)
   else
     (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected\n");
-     handle_disconnect st conn_uid)
+     handle_disconnect st conn_uid msg_or_notif)
 
-and handle_disconnect st uid =
+and handle_disconnect st uid msg_or_notif =
   try let user_chats = get_chats_of_uid st.state uid in
     let username = get_username st.state uid in
     let msg = username ^ " has left." in
     let view_state' = List.fold_left
       (fun state cid ->
          (*st := add_msg !st 0 (cid, msg);*)
-         broadcast_to_chat st 0 (cid,msg)
+         broadcast_to_chat st 0 (cid,msg) msg_or_notif
       ) st user_chats in
     let state' = remove_user view_state'.state uid in
     {view_state' with state = state'}
@@ -272,7 +276,7 @@ let send_msg st uid (chatid, msg) =
     let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
-    let view_state' = broadcast_to_chat view_state uid (chatid, new_msg) in
+    let view_state' = broadcast_to_chat view_state uid (chatid, new_msg) `MSG in
     let res' = Some {userid = uid; cmd = "a"; success = true; info = Nil;
                      chatid = chatid} in
     {view_state' with response = res'}
@@ -292,15 +296,21 @@ let res' = Some {userid = uid; cmd = "b"; success = false;
                  info = String err; chatid = -1} in
     {st with response = res'}
 
-let create_private_chat st uid username =
-  try let uid2 = get_uid st.state username in
+let rec create_private_chat st uid username =
+  try let accepting_uid = get_uid st.state username in
+    let sender_username = get_username st.state uid in
     let new_chatid = st.chatid + 1 in
     print_endline ("creating priv chat with " ^ username ^ " of chatid " ^
                    string_of_int new_chatid);
-    let state' = add_priv_chat st.state uid uid2 new_chatid in
+    let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
+    let view_state1 = {st with state = state1} in
+    let view_state2 =
+      broadcast_to_chat view_state1 uid
+      (new_chatid, (""))
+      (`NOTIF sender_username) in
     let res' = Some {userid = uid; cmd = "d"; success = true;
                      info = String (username); chatid = new_chatid}
-    in {st with response = res'; state = state'; chatid = new_chatid}
+    in {view_state2 with response = res'; chatid = new_chatid}
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "d"; success = false;
                      info = String err; chatid = -1} in

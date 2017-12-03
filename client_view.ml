@@ -33,16 +33,17 @@ and handle_stdin res w =
   | "#help" -> print_string ("help message here\n"); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
-    if Str.string_match change_chat res 0 then (handle_change_chat res; send_msg w)
+    if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
     else (Writer.write_line w (parse_send res !st); send_msg w)
 
-and handle_change_chat s =
+and handle_change_chat s w =
   let open String in
   let start = index s ' ' in
   let length = length s in
-  let chatname = sub s start (length - start) in
+  let chatname = sub s (start+1) (length - start - 1) in
   st := change_chat chatname !st;
-  print ()
+  print ();
+  Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
