@@ -50,7 +50,8 @@ and handle_stdin res w =
   | "#help" -> printc_string red ("help message here\n"); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
-    if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
+    if Str.string_match change_chat res 0
+    then (handle_change_chat res w; send_msg w)
     else
       begin
         st := check_chat res !st;
@@ -69,7 +70,8 @@ and handle_change_chat s w =
   st := change_chat chatname !st;
   print ();
   if (get_print !st = [])
-  then Writer.write_line w (parse_send "#history" !st)
+  then (print_endline (red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "...");
+        Writer.write_line w (parse_send "#history" !st))
 
 (* [create_user r w] is sends the username from standard input to the server.
  * Checks if the username is a valid username. *)
@@ -83,11 +85,11 @@ let rec create_user r w =
       end in
     if is_some
     then
-      (printf "Error invalid characters in username\n"; print_string "> ";
+      (print_string (red ^ "Error invalid characters in username\n > ");
        create_user r w)
     else if String.length line = 0
     then
-      (printf "Error empty username input\n"; print_string "> ";
+      (print_string (red ^ "Error empty username input\n > ");
        create_user r w)
     else (Writer.write_line w (parse_create_user line);
           read_create_username r w) in

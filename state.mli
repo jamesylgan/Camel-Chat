@@ -108,3 +108,5 @@ val remove_user: state -> int -> state
 (* [remove_from_chat st uid chatid] removes [uid] from [chat].
  * -raises: UpdateError "Chat not found" if [chatid] is not a current chat id.*)
 val remove_from_chat: state -> int -> int -> state
+
+val get_chat_info: state -> string -> (string * int) 

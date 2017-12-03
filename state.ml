@@ -126,6 +126,15 @@ let get_chatid st chatname =
   try List.assoc (lc chatname) (List.map (fun (x,y) -> (lc x, y)) st.pub_chat_names)
   with _ -> raise (UpdateError ("Chat not found"))
 
+let get_chat_info st chatname =
+  try
+    (let lst = List.filter (fun (cname, cid) -> lc cname = lc chatname)
+         st.pub_chat_names in
+     match lst with
+     | [] -> raise (UpdateError ("Chat not found"))
+     | h::t -> h )
+  with _ -> raise (UpdateError ("Chat not found"))
+
 let remove_user st uid =
   let conns' = List.remove_assoc uid st.curr_conns in
   let user_lst' = List.remove_assoc uid st.user_list in
