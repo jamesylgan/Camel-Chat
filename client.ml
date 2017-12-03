@@ -191,7 +191,7 @@ let parse_receive s st =
           chats = List.remove_assoc info st.chats;
           print = [red ^ "Returning to " ^ purp ^ "lobby" ^ red ^ "..."]
         }
-        | 'j' -> begin 
+        | 'j' -> begin
           if ((snd st.curr_chat) <> chatid) then
             {st with print = []}
           else {st with print = color blue [info]}
