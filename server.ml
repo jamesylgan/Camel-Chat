@@ -263,7 +263,7 @@ and handle_disconnect st uid =
 
 (* msg stored includes username *)
 let send_msg st uid (chatid, msg) =
-  print_string ("msg received: " ^ msg ^ "\n");
+  print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
   try let username = get_username st.state uid in
     let new_msg = username ^ ": " ^ msg in
     let state' = add_msg st.state uid (chatid, new_msg) in
@@ -274,7 +274,7 @@ let send_msg st uid (chatid, msg) =
                      chatid = chatid} in
     {view_state' with response = res'}
   with UpdateError err ->
-    print_string ("send msg error: " ^ err);
+    print_endline ("send msg error: " ^ err);
     let res' = Some {userid = uid; cmd = "a"; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
@@ -292,6 +292,8 @@ let res' = Some {userid = uid; cmd = "b"; success = false;
 let create_private_chat st uid username =
   try let uid2 = get_uid st.state username in
     let new_chatid = st.chatid + 1 in
+    print_endline ("creating priv chat with " ^ username ^ " of chatid " ^
+                   string_of_int new_chatid);
     let state' = add_priv_chat st.state uid uid2 new_chatid in
     let res' = Some {userid = uid; cmd = "d"; success = true;
                      info = String (username); chatid = new_chatid}
