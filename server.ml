@@ -39,6 +39,7 @@ type view_state = {
 let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"
+let blue = "\027[34m"
 
 let init_state () = {
   state = init_state ();
@@ -279,11 +280,50 @@ let create_user st username r w =
                      chatid = -1} in
     {st with response = res'}
 
+
+(* does nothing if server broadcasting to disconnected client *)
+let rec broadcast_to_chat st uid (chatid, msg) msg_or_notif =
+  print_string ("broadcasting to chat " ^ string_of_int chatid ^ "\n");
+  let conn_lst = get_conns_of_chat st.state chatid uid in
+  let iter_helper chatid msg uid st (conn_uid,(_,w)) =
+    print_string (string_of_int conn_uid ^ ": ");
+    let res_msg =
+      match msg_or_notif with
+      | `MSG ->
+        string_of_response {userid = conn_uid; cmd = "j"; success = true;
+                                    info = String msg; chatid = chatid}
+      | `NOTIF s ->
+        string_of_response {userid = conn_uid; cmd = "k"; success = true;
+                            info = String s; chatid = chatid} in
+    print_string (res_msg ^ "\n");
+    if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
+    else disconnected_client st uid conn_uid msg_or_notif in
+  List.fold_left (iter_helper chatid msg uid) st conn_lst
+
+and disconnected_client st uid conn_uid msg_or_notif =
+  if uid = 0 then st (* server is broadcasting *)
+  else
+    (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected\n");
+     handle_disconnect st conn_uid msg_or_notif)
+
+and handle_disconnect st uid msg_or_notif =
+  try let user_chats = get_chats_of_uid st.state uid in
+    let username = get_username st.state uid in
+    let msg = green ^ username ^ red ^ " has left." ^ b in
+    let view_state' = List.fold_left
+      (fun state cid ->
+         (*st := add_msg !st 0 (cid, msg);*)
+         broadcast_to_chat st 0 (cid,msg) msg_or_notif
+      ) st user_chats in
+    let state' = remove_user view_state'.state uid in
+    {view_state' with state = state'}
+  with UpdateError err -> print_string err; st
+
 (* msg stored includes username *)
 let send_msg st uid (chatid, msg) =
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
   try let username = get_username st.state uid in
-    let new_msg = username ^ ": " ^ msg in
+    let new_msg = green ^ username ^ blue ^ ": " ^ msg ^ b in
     let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
