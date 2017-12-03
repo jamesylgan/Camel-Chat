@@ -16,6 +16,8 @@ let init_state () =
 let red = "\027[31m"
 let blue = "\027[34m"
 let green = "\027[32m"
+let purp = "\027[35m"
+let cyan = "\027[36m"
 
 let color c lst = List.map (fun x -> c ^ x) lst
 
@@ -30,14 +32,14 @@ let get_chats st = st.chats |> List.map fst
 
 let change_chat s st =
   if not (List.mem_assoc s st.chats) then
-    {st with print = ["#CHANGE_CHAT failed: You are not in chat " ^ s ^ "."]}
+    {st with print = ["#CHANGE_CHAT failed: You are not in chat " ^ purp ^ s ^ red ^ "."]}
   else if fst st.curr_chat = s then
     {st with print = ["#CHANGE_CHAT failed: You are already in the chat."]}
   else {
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
     chats = st.chats;
-    print = [red ^ "Entering chat " ^ green ^ s ^ red ^ "..."];
+    print = [red ^ "Entering chat " ^ purp ^ s ^ red ^ "..."];
   }
 
 let check_chat s st =
@@ -49,16 +51,16 @@ let check_chat s st =
   if (Str.string_match priv_chat s 0) || (Str.string_match pub_chat s 0)
   then let name = sub s 10 ((length s) - 10) in
     if not (contains name ' ') then st
-    else {st with print = ["Error: Please use a chat name without spaces!"]}
+    else {st with print = [red ^ "Error: Please use a chat name without spaces!"]}
   else if (Str.string_match join_chat s 0)
   then let name = sub s 6 ((length s) - 6) |> String.lowercase_ascii in
     if not (List.mem_assoc name st.chats) then st
-    else {st with print = ["Error: You are already in the chat!"]}
+    else {st with print = [red ^ "Error: You are already in the chat!"]}
   else if (Str.string_match leave_chat s 0)
   then let name = sub s 7 ((length s) - 7) |> String.lowercase_ascii in
     if (List.mem_assoc name st.chats) then st
-    else if name = "lobby" then {st with print = ["Error: You can't leave the lobby!"]}
-    else {st with print = ["Error: You are not in chat " ^ name]}
+    else if name = "lobby" then {st with print = [red ^ "Error: You can't leave the lobby!"]}
+    else {st with print = [red ^ "Error: You are not in chat " ^ purp ^ name]}
   else st
 
 let parse_create_user s =
@@ -144,7 +146,7 @@ let parse_receive s st =
         let snd_c = index_from s 2 ':' in
         let trd_c = index_from s (snd_c + 1) ':' in
         let his = sub s (trd_c + 1) (len - trd_c - 1) in
-        {st with print = color green (extract his [])}
+        {st with print = color cyan (extract his [])}
       end
     | 'c' -> begin
         let snd_c = index_from s 2 ':' in
@@ -170,7 +172,7 @@ let parse_receive s st =
         let trd_c = index_from s (snd_c + 1) ':' in
         let pub_chats = sub s (trd_c + 1) ((length s) - trd_c - 1) in
         if (extract pub_chats []) <> [] then
-          {st with print = color green (extract pub_chats [])}
+          {st with print = color purp (extract pub_chats [])}
         else {st with print = [red ^ "No public chats available currently."]}
       end
     (*Response strings involving <len of chatid>:<chatid>*)
@@ -187,7 +189,7 @@ let parse_receive s st =
           userid = st.userid;
           curr_chat = ("lobby", 0);
           chats = List.remove_assoc info st.chats;
-          print = [red ^ "Leaving chat and returning to the lobby..."]
+          print = [red ^ "Returning to " ^ purp ^ "lobby" ^ red ^ "..."]
         }
         | 'j' -> begin
           if ((snd st.curr_chat) <> chatid) then
@@ -206,7 +208,7 @@ let parse_receive s st =
             userid = st.userid;
             curr_chat = (info, chatid);
             chats = (info, chatid) :: st.chats;
-            print = [red ^ "Entering chat " ^ green ^ info ^ red ^ "..."];
+            print = [red ^ "Entering chat " ^ purp ^ info ^ red ^ "..."];
         }
 
 (* TODO: Yo James, would you mind work on this?

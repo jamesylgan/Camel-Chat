@@ -5,7 +5,7 @@ let st = ref (init_state ())
 
 let b = "\027[0m"
 let red = "\027[31m"
-let green = "\027[32m"
+let purp = "\027[35m"
 
 let printc_string c s = print_string (c ^ s ^ b)
 let printc_endline c s = print_endline (c ^ s ^ b)
@@ -32,10 +32,10 @@ let rec send_msg w =
 
 and handle_stdin res w =
   match res with
-  | "#currchat" -> printc_endline green (get_curr_chat !st); send_msg w
+  | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
   | "#mychats" ->
     let chats = get_chats !st in
-    printc_endline green (String.concat ", " chats); send_msg w
+    printc_endline purp (String.concat ", " chats); send_msg w
   | "#quit" -> exit 0
   | "#help" -> printc_string red ("help message here\n"); send_msg w
   | res ->
@@ -50,7 +50,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  if (get_print !st = [red ^ "Entering chat " ^ green ^ s ^ red ^ "..."]) 
+  if (get_print !st = [red ^ "Entering chat " ^ purp ^ s ^ red ^ "..."])
   then Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
@@ -94,7 +94,7 @@ let rw_loop r w =
 
 let chat _ r w =
   create_user r w >>= fun () ->
-  printc_string red "Welcome to the lobby!\n";
+  print_string (red ^ "Welcome to the " ^ purp ^ "lobby!\n");
   rw_loop r w;
   Deferred.never ()
 
