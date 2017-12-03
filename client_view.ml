@@ -41,7 +41,13 @@ and handle_stdin res w =
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
-    else (Writer.write_line w (parse_send res !st); send_msg w)
+    else
+begin
+  st := check_chat res !st;
+  if get_print !st = [] then (Writer.write_line w (parse_send res !st); send_msg w)
+  else (print (); send_msg w)
+end       
+
 
 and handle_change_chat s w =
   let open String in
@@ -50,7 +56,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  if (get_print !st <> [])
+  if (get_print !st = [])
   then Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
