@@ -26,6 +26,18 @@ let st4 = {
   chats = [("cornell", 15); ("cs3110", 42); ("lobby", 0)];
   print = ["Your request is accepted :)"];
 }
+let st5 = {
+  userid = 1;
+  curr_chat = ("lobby", 0);
+  chats = [("Jack", 42); ("lobby", 0)];
+  print = ["Jack has initiated a new chat with you !"];
+}
+let st6 = {
+  userid = 10;
+  curr_chat = ("cs3110", 42);
+  chats = [("Jojo:)", 15); ("cs3110", 42); ("lobby", 0)];
+  print = ["Jojo:) has initiated a new chat with you !"];
+}
 
 let parse_create_user_tests = [
   "Create User1" >:: (fun _ -> assert_equal "f, 6:Turing" (parse_create_user "Turing"));
@@ -43,21 +55,21 @@ let parse_send_tests = [
   "Create pub chat1" >:: (fun _ -> assert_equal "e, 1:1, 9:class2019" (parse_send "#makechat class2019" st1));
   "Create pub chat2" >:: (fun _ -> assert_equal "e, 2:10, 7:cornell" (parse_send "#makechat cornell" st2));
   (* Test cases on command "join chat". *)
-  "Create pub chat1" >:: (fun _ -> assert_equal "g, 1:1, 9:class2019" (parse_send "#join class2019" st1));
-  "Create pub chat2" >:: (fun _ -> assert_equal "g, 2:10, 7:cornell" (parse_send "#join cornell" st2));
+  "Join chat1" >:: (fun _ -> assert_equal "g, 1:1, 9:class2019" (parse_send "#join class2019" st1));
+  "Join chat2" >:: (fun _ -> assert_equal "g, 2:10, 7:cornell" (parse_send "#join cornell" st2));
   (* Test cases on command "leave chat". *)
-  "Create pub chat1" >:: (fun _ -> assert_equal "h, 1:1, 9:class2019" (parse_send "#leave class2019" st1));
-  "Create pub chat2" >:: (fun _ -> assert_equal "h, 2:10, 7:cornell" (parse_send "#leave cornell" st2));
+  "Leave chat1" >:: (fun _ -> assert_equal "h, 1:1, 9:class2019" (parse_send "#leave class2019" st1));
+  "Leave chat2" >:: (fun _ -> assert_equal "h, 2:10, 7:cornell" (parse_send "#leave cornell" st2));
   (* Test cases on command "get online users". *)
-  "Create pub chat1" >:: (fun _ -> assert_equal  "c, 1:1"  (parse_send "#users" st1));
-  "Create pub chat2" >:: (fun _ -> assert_equal  "c, 2:10"  (parse_send "#users" st2));
+  "Get online users1" >:: (fun _ -> assert_equal  "c, 1:1"  (parse_send "#users" st1));
+  "Get online users2" >:: (fun _ -> assert_equal  "c, 2:10"  (parse_send "#users" st2));
   (* Test cases on command "get public chats". *)
-  "Create pub chat1" >:: (fun _ -> assert_equal  "i, 1:1"  (parse_send "#pubchats" st1));
-  "Create pub chat2" >:: (fun _ -> assert_equal  "i, 2:10"  (parse_send "#pubchats" st2));
+  "Get pub chat1" >:: (fun _ -> assert_equal  "i, 1:1"  (parse_send "#pubchats" st1));
+  "Get pub chat2" >:: (fun _ -> assert_equal  "i, 2:10"  (parse_send "#pubchats" st2));
   (* Test case on command "send message". *)
-  "Create pub chat1" >:: (fun _ -> assert_equal "a, 1:1, 25:How's your history class?, 1:1"
+  "Send msg1" >:: (fun _ -> assert_equal "a, 1:1, 25:How's your history class?, 1:0"
                              (parse_send "How's your history class?" st1));
-  "Create pub chat2" >:: (fun _ -> assert_equal "a, 2:10, 14:Time to leave!, 2:42"
+  "Send msg2" >:: (fun _ -> assert_equal "a, 2:10, 14:Time to leave!, 2:42"
                              (parse_send "Time to leave!" st2));
 ]
 
@@ -94,6 +106,9 @@ let parse_receive_tests = [
   (* Test case on response "leave_chat". *)
   "LEAVE_CHAT0" >:: (fun _ -> assert_equal {st1 with print = ["Your request is confirmed. Returning to lobby..."]}
                         (parse_receive "s: h, 1:1, 2:42, 6:cs3110" st3));
+  (* Test cases on response "chat_notification". *)
+  "CHAT_NOTIFICATION1" >:: (fun _ -> assert_equal st5 (parse_receive "s: k, 1:1, 2:42, 4:Jack" st1));
+  "CHAT_NOTIFICATION2" >:: (fun _ -> assert_equal st6 (parse_receive "s: k, 2:10, 2:15, 6:Jojo:)" st2));
   (* Test cases on response "get_pub_chat". *)
   "GET_PUB_CHAT0" >:: (fun _ -> assert_equal {st1 with print = ["No public chats available currently."]}
                          (parse_receive "s: i, 1:1, 0:" st1));

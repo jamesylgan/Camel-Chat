@@ -49,12 +49,13 @@ let check_chat s st =
     if not (contains name ' ') then st
     else {st with print = [red ^ "Error: Please initiate a chat name without space!"]}
   else if (Str.string_match join_chat s 0)
-  then let name = sub s 6 ((length s) - 6) in
+  then let name = sub s 6 ((length s) - 6) |> String.lowercase_ascii in
     if not (List.mem_assoc name st.chats) then st
     else {st with print = [red ^ "Error: Chat already joined !"]}
   else if (Str.string_match leave_chat s 0)
-  then let name = sub s 7 ((length s) - 7) in
+  then let name = sub s 7 ((length s) - 7) |> String.lowercase_ascii in
     if (List.mem_assoc name st.chats) then st
+    else if name = "lobby" then {st with print = [red ^ "Error: Cannot quit lobby!"]}
     else {st with print = [red ^ "Error: Cannot leave a chat not in current chat list!"]}
   else st
 
@@ -191,6 +192,12 @@ let parse_receive s st =
             {st with print = []}
           else {st with print = color blue [info]}
         end
+        | 'k' -> {
+            userid = st.userid;
+            curr_chat = st.curr_chat;
+            chats = (info, chatid) :: st.chats;
+            print = [green ^ info ^ red ^ " has initiated a new chat with you !"]
+          }
 (* d, e, g all give the same thing, assuming that the [curr_chatid]
   is automaticially swtiched to that of any newly created chat. *)
         | same -> {

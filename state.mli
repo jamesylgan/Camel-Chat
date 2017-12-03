@@ -66,11 +66,11 @@ val add_conn: state -> int -> (Async.Reader.t * Async.Writer.t) -> state
 val add_pub_chat: state -> int -> int -> string -> state
 
 (* [add_priv_chat st uid1 uid2 chatid] updates st.priv_chat_list with [uid1] and
- * [uid2] in [chatid] *)
+ * [uid2] in [chatid] and initializes st.chat_msg with (cid, []) *)
 val add_priv_chat: state -> int -> int -> int -> state
 
 (* [add_user_to_pub_chat st uid chatid] adds [uid] to the list of users of [chatid]
- * in st.pub_chat_list *)
+ * in st.pub_chat_list and initializes st.chat_msg with (cid, []) *)
 val add_user_to_pub_chat: state -> int -> int -> state
 
 (* [get_username st uid] is the username of [uid] as listed in st.user_list *)

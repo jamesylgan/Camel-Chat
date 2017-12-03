@@ -53,20 +53,25 @@ and handle_change_chat s =
 
 let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
-  Reader.read_line stdin >>= function
-  | `Eof -> (printf "Error reading stdin\n"; create_user r w)
-  | `Ok line ->
+  let read_std line =
     let is_some =
       begin match String.index_opt line ' ' with
-      | Some x -> true
-      | None -> false
-    end in
+        | Some x -> true
+        | None -> false
+      end in
     if is_some
-    then (printf "Error invalid characters in username\n"; create_user r w)
+    then
+      (printf "Error invalid characters in username\n"; print_string "> ";
+       create_user r w)
     else if String.length line = 0
-    then (printf "Error empty username input\n"; printc_endline green "> "; create_user r w)
+    then
+      (printf "Error empty username input\n"; print_string "> ";
+       create_user r w)
     else (Writer.write_line w (parse_create_user line);
-          read_create_username r w)
+          read_create_username r w) in
+  Reader.read_line stdin >>= function
+  | `Eof -> (printf "Error reading stdin\n"; create_user r w)
+  | `Ok line -> read_std line
 
 and read_create_username r w =
   Reader.read_line r >>= function

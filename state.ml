@@ -93,16 +93,19 @@ let add_conn st uid (r,w) =
 
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = insert chatid [uid] st.pub_chat_list in
+  let chat_msg' = insert chatid [] st.chat_msg in
   let chat_names' =
     (chatname, chatid) ::
     if List.mem_assoc chatname st.pub_chat_names
     then raise (UpdateError "Chat name taken, please try again.")
     else st.pub_chat_names in
-  {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names'}
+  {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names';
+           chat_msg = chat_msg'}
 
 let add_priv_chat st uid1 uid2 chatid =
   let chat_lst' = insert chatid [uid1; uid2] st.priv_chat_list in
-  {st with priv_chat_list = chat_lst'}
+  let chat_msg' = insert chatid [] st.chat_msg in
+  {st with priv_chat_list = chat_lst'; chat_msg = chat_msg'}
 
 let add_user_to_pub_chat st uid cid =
   try (
