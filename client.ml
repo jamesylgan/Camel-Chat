@@ -35,7 +35,7 @@ let change_chat s st =
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
     chats = st.chats;
-    print = [red ^ "Chatting with to " ^ s ^ "..."];
+    print = [red ^ "Chatting with " ^ red ^ s ^ "..."];
   }
 
 let check_chat s st =
