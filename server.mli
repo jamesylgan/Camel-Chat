@@ -2,7 +2,7 @@ open State
 
 (* typically an int or string or string list depending on implementation *)
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list
+            Int of int | SList of string list | SSTuple of (string * string)
 
 (* [command] is the type of commands that can be called from the client *)
 type command =
@@ -73,12 +73,12 @@ val create_user: view_state -> string -> Async.Reader.t -> Async.Writer.t -> vie
  * server. It removes the disconnected [uid] from user_list and from all
  * chats that the user is in. Broadcasts message to all chats that the user was
  * in: "user _ has left". Sends a response to the client. *)
-val handle_disconnect: view_state -> int -> [< `MSG | `NOTIF of string ] -> view_state
+val handle_disconnect: view_state -> int -> view_state
 
 (* [broadcast_to_chat uid (chatid, msg)] is a helper for [handle_disconnect] to
  * send messages to all chats that the disconnected [uid] was in. *)
-val broadcast_to_chat: view_state -> int -> (int * string) ->
-  [< `MSG | `NOTIF of string ] -> view_state
+val broadcast_to_chat: view_state -> int -> int * string ->
+  [< `MSG | `NOTIF of string > `NOTIF ] -> view_state
 
 (* [get_users uid] is the username of the uid *)
 val get_users: view_state -> int -> view_state

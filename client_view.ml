@@ -50,7 +50,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  if (get_print !st = [red ^ "Entering chat " ^ purp ^ s ^ red ^ "..."])
+  if (get_print !st = [red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..."])
   then Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
@@ -94,7 +94,7 @@ let rw_loop r w =
 
 let chat _ r w =
   create_user r w >>= fun () ->
-  print_string (red ^ "Welcome to the " ^ purp ^ "lobby!\n");
+  print_string (red ^ "Welcome to the " ^ purp ^ "lobby" ^ red^ "!\n" ^ b);
   rw_loop r w;
   Deferred.never ()
 

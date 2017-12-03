@@ -39,6 +39,7 @@ type view_state = {
 let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"
+let blue = "\027[34m"
 
 let init_state () = {
   state = init_state ();
@@ -291,7 +292,7 @@ let create_user st username r w =
 let send_msg st uid (chatid, msg) =
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
   try let username = get_username st.state uid in
-    let new_msg = username ^ ": " ^ msg in
+    let new_msg = green ^ username ^ blue ^ ": " ^ msg ^ b in
     let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
@@ -357,6 +358,8 @@ let get_public_chat st uid =
     {st with response = res'}
 
 let parse st str r w =
+  let cmd_lst = Str.split (Str.regexp "$") str in
+  print_endline ("Cmds: "^(String.concat " && " cmd_lst));
   let input = input_of_string str in
   let res = match input.cmd with
     | Create_user s -> create_user st s r w
