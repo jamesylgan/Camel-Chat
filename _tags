@@ -1,2 +1,2 @@
-true: package(oUnit),package(core),package(async),package(str),package(ANSITerminal)
+true: package(oUnit),package(core),package(async),package(str),package(Emoji)
 true: thread
