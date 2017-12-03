@@ -40,7 +40,7 @@ let change_chat s st =
     {st with print = [red ^ "#CHANGE_CHAT failed: You are already in the chat."]}
   else {
     userid = st.userid;
-    curr_chat = (s, (List.assoc s st.chats));
+    curr_chat = (s, (List.assoc chat_n chats));
     chats = st.chats;
     print = [];
   }
