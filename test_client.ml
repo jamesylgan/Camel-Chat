@@ -37,13 +37,13 @@ let st4 = {
 let st5 = {
   userid = 1;
   curr_chat = ("lobby", 0);
-  chats = [("Josh", 2); ("lobby", 0)];
+  chats = [("lobby", 0)];
   print = ["\027[32mJosh\027[31m has started a chat with you!"];
 }
 let st6 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
-  chats = [("Jojo:)", 2); ("cs3110", 42); ("lobby", 0)];
+  chats = [("cs3110", 42); ("lobby", 0)];
   print = ["\027[32mJojo:)\027[31m has started a chat with you:)"];
 }
 
