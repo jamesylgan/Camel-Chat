@@ -21,8 +21,7 @@ let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; return ())
-  | `Ok line ->
-    Writer.write_line w (parse_send line !st); send_msg w
+  | `Ok line -> handle_stdin line w 
 
 and handle_stdin res w =
   match res with
@@ -58,7 +57,7 @@ let rec create_user r w =
     if is_some
     then (printf "Error invalid characters in username\n"; create_user r w)
     else if String.length line = 0
-    then (printf "Error empty username input\n"; create_user r w)
+    then (printf "Error empty username input\n"; print_endline "> "; create_user r w)
     else (Writer.write_line w (parse_create_user line);
           read_create_username r w)
 
