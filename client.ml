@@ -187,7 +187,7 @@ let parse_receive s st =
           userid = st.userid;
           curr_chat = ("lobby", 0);
           chats = List.remove_assoc info st.chats;
-          print = [red ^ "Your request is confirmed. Returning to lobby..."]
+          print = [red ^ "Leaving chat and returning to the lobby..."]
         }
         | 'j' -> begin
           if ((snd st.curr_chat) <> chatid) then
