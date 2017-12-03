@@ -2,7 +2,7 @@ open State
 
 (* typically an int or string or string list depending on implementation *)
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list
+            Int of int | SList of string list | SSTuple of (string * string)
 
 (* [command] is the type of commands that can be called from the client *)
 type command =
