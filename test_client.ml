@@ -37,14 +37,14 @@ let st4 = {
 let st5 = {
   userid = 1;
   curr_chat = ("lobby", 0);
-  chats = [("lobby", 0)];
-  print = ["\027[32mJosh\027[31m has started a chat with you!"];
+  chats = [("Josh", 2); ("lobby", 0)];
+  print = ["\027[32mJosh\027[31m has started a chat with you."];
 }
 let st6 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
   chats = [("cs3110", 42); ("lobby", 0)];
-  print = ["\027[32mJojo:)\027[31m has started a chat with you:)"];
+  print = ["\027[32mJojo:)\027[31m has joined the chat."];
 }
 
 let parse_create_user_tests = [
@@ -116,9 +116,9 @@ let parse_receive_tests = [
                         (parse_receive "s: h, 1:1, 2:42, 6:cs3110" st3));
 (* Test cases on response "chat_notification". *)
   "CHAT_NOTIFICATION1" >:: (fun _ -> assert_equal st5
-                               (parse_receive "s: k, 1:1, 1:2, 4:Josh, 29: has started a chat with you!" st1));
+                               (parse_receive "s: k, 1:1, 1:2, 4:Josh, 29: has started a chat with you." st1));
   "CHAT_NOTIFICATION2" >:: (fun _ -> assert_equal st6
-                               (parse_receive "s: k, 2:10, 1:2, 6:Jojo:), 30: has started a chat with you:)" st2));
+                               (parse_receive "s: k, 2:10, 1:2, 6:Jojo:), 21: has joined the chat." st2));
   (* Test cases on response "get_pub_chat". *)
   "GET_PUB_CHAT0" >:: (fun _ -> assert_equal {st1 with print = [red^"No public chats available currently."]}
                          (parse_receive "s: i, 1:1, 0:" st1));
@@ -132,9 +132,9 @@ let parse_receive_tests = [
   "RECEIVE_MSG2" >:: (fun _ -> assert_equal {st2 with print = color blue ["Hi everyone :D"]}
                          (parse_receive "s: j, 1:1, 2:42, 14:Hi everyone :D" st2));
 (* Test cases on response "failure". *)
-  "FAILURE1" >:: (fun _ -> assert_equal {st1 with print = [red^"#CREATE_PUB_CHAT failed: Chat name already taken :("]}
+  "FAILURE1" >:: (fun _ -> assert_equal {st1 with print = [red^"Chat name already taken :("]}
                      (parse_receive "f: e, 26:Chat name already taken :(" st1));
-  "FAILURE2" >:: (fun _ -> assert_equal {st2 with print = [red^"#JOIN_CHAT failed: The intended chat is not available."]}
+  "FAILURE2" >:: (fun _ -> assert_equal {st2 with print = [red^"The intended chat is not available."]}
                      (parse_receive "f: g, 35:The intended chat is not available." st2));
 ]
 
