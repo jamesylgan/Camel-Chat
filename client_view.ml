@@ -7,6 +7,10 @@ let st = ref (init_state ())
 let b = "\027[0m"
 let red = "\027[31m"
 let purp = "\027[35m"
+let green = "\027[32m"
+let cyan = "\027[36m"
+let blue = "\027[34m"
+let yellow = "\027[1;33m"
 
 let printc_string c s = print_string (c ^ s ^ b)
 let printc_endline c s = print_endline (c ^ s ^ b)
@@ -129,7 +133,11 @@ let run ~host ~port =
 (* [main ()] is the main function of client server that starts the scheduler
  * and reads from the command line arguments. *)
 let main () =
-  printc_string red "Starting Caml Chat... \n";
+  print_endline (Emoji.camel ^ red ^ "  S" ^ yellow ^ "t" ^ green ^ "a" ^
+                 cyan ^ "r" ^ blue ^ "t" ^ purp ^ "i" ^ red ^ "n" ^ yellow ^ "g"
+                 ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "l" ^ red ^
+                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t " ^ b ^
+                 Emoji.camel);
   printc_string red "Enter a username to begin: \n";
   printc_string red "> ";
   Command.async
