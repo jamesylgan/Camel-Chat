@@ -23,12 +23,14 @@ let get_chats st = st.chats |> List.map fst
 
 let change_chat s st =
   if not (List.mem_assoc s st.chats) then
-    {st with print = ["#CHANGE_CHAT failed: Chat not available."]}
+    {st with print = ["#CHANGE_CHAT failed: You are not in chat " ^ s ^ "."]}
+  else if fst st.curr_chat = s then
+    {st with print = ["#CHANGE_CHAT failed: You are already in the chat."]}
   else {
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
     chats = st.chats;
-    print = ["Chatting with to " ^ s ^ "..."];
+    print = ["Entering chat " ^ s ^ "..."];
   }
 
 let check_chat s st =
@@ -40,16 +42,16 @@ let check_chat s st =
   if (Str.string_match priv_chat s 0) || (Str.string_match pub_chat s 0)
   then let name = sub s 10 ((length s) - 10) in
     if not (contains name ' ') then st
-    else {st with print = ["Error: Please initiate a chat name without space!"]}
+    else {st with print = ["Error: Please initiate a chat name without white spaces!"]}
   else if (Str.string_match join_chat s 0)
   then let name = sub s 6 ((length s) - 6) |> String.lowercase_ascii in
     if not (List.mem_assoc name st.chats) then st
-    else {st with print = ["Error: Chat already joined !"]}
+    else {st with print = ["Error: You are already in the chat!"]}
   else if (Str.string_match leave_chat s 0)
   then let name = sub s 7 ((length s) - 7) |> String.lowercase_ascii in
     if (List.mem_assoc name st.chats) then st
-    else if name = "lobby" then {st with print = ["Error: Cannot quit lobby!"]}
-    else {st with print = ["Error: Cannot leave a chat not in current chat list!"]}
+    else if name = "lobby" then {st with print = ["Error: You can't leave the lobby!"]}
+    else {st with print = ["Error: You are not in chat " ^ name]}
   else st
 
 let parse_create_user s =
@@ -153,7 +155,7 @@ let parse_receive s st =
           userid = uid;
           curr_chat = ("lobby", 0);
           chats = [("lobby", 0)];
-          print = ["Your username is accepted :D"]
+          print = []
         }
         end
     | 'i' -> begin
@@ -197,7 +199,7 @@ let parse_receive s st =
             userid = st.userid;
             curr_chat = (info, chatid);
             chats = (info, chatid) :: st.chats;
-            print = ["Your request is accepted :)"];
+            print = ["Entering chat " ^ info ^ "..."];
         }
 
 (* TODO: Yo James, would you mind work on this?
