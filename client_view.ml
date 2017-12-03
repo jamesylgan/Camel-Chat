@@ -26,13 +26,16 @@ let rec read r =
     print ();
     read r
 
-(* [send_msg w]*)
+(* [send_msg w] trims white space from the standard input recursively calls
+ * send_msg to send the input to the server. *)
 let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; return ())
   | `Ok line -> handle_stdin (line |> String.trim) w
 
+(* [handle_stdin res w] is the helper function to check if [res] is a local
+ * command rather than a message to be sent *)
 and handle_stdin res w =
   match res with
   | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
@@ -45,13 +48,15 @@ and handle_stdin res w =
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
     else
-begin
-  st := check_chat res !st;
-  if get_print !st = [] then (Writer.write_line w (parse_send res !st); send_msg w)
-  else (print (); send_msg w)
-end
+      begin
+        st := check_chat res !st;
+        if get_print !st = []
+        then (Writer.write_line w (parse_send res !st); send_msg w)
+        else (print (); send_msg w)
+      end
 
-
+(* [handle_change_chat s w] handles change chat. Prints history if there was no
+ * error in the change chat call. *)
 and handle_change_chat s w =
   let open String in
   let start = index s ' ' in
@@ -62,6 +67,8 @@ and handle_change_chat s w =
   if (get_print !st = [])
   then Writer.write_line w (parse_send "#history" !st)
 
+(* [create_user r w] is sends the username from standard input to the server.
+ * Checks if the username is a valid username. *)
 let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
   let read_std line =
@@ -84,34 +91,43 @@ let rec create_user r w =
   | `Eof -> (printf "Error reading stdin\n"; create_user r w)
   | `Ok line -> read_std line
 
+(* [read_create_username r w] reads the response from the server. *)
 and read_create_username r w =
   Reader.read_line r >>= function
   | `Eof -> (printf "Error reading server\n"; create_user r w)
   | `Ok line -> (handle_create_user line r w)
 
-(* parse string of server response; on success, update state accordingly with
- * username; on failure, print error and loop create_user *)
+(* [handle_create_user] parses the string of server response; on success,
+ * update state accordingly with username; on failure, print error and loop
+ * create_user *)
 and handle_create_user res r w =
   st := parse_receive res !st;
   print ();
   if (get_userid !st) = -1 then (printc_string red "> "; create_user r w) else return ()
 
+(* [rw_loop r w] initializes the read and write asynchronous loops. *)
 let rw_loop r w =
   don't_wait_for (send_msg w);
   don't_wait_for (read r);
   ()
 
+(* [chat _ r w] calls create user. When the deferred object is returned from
+ * create_user, the function starts the read write loop and never returns. *)
 let chat _ r w =
   create_user r w >>= fun () ->
   print_string (red ^ "Welcome to the " ^ purp ^ "Lobby" ^ red^ "!\n" ^ b);
   rw_loop r w;
   Deferred.never ()
 
+(* [run host port] connects to the server at [host] and [port] and calls the
+ * [chat] command. *)
 let run ~host ~port =
   let addr = Tcp.to_host_and_port host port in
   ignore(Tcp.with_connection addr chat);
   Deferred.never ()
 
+(* [main ()] is the main function of client server that starts the scheduler
+ * and reads from the command line arguments. *)
 let main () =
   printc_string red "Starting Caml Chat... \n";
   printc_string red "Enter a username to begin: \n";
