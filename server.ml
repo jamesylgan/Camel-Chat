@@ -332,7 +332,7 @@ let rec create_private_chat st uid username =
         let view_state1 = {st with state = state1} in
         let view_state2 =
           broadcast_to_chat view_state1 uid
-          (new_chatid, (""))
+          (new_chatid, (" has started a chat with you. "))
           (`NOTIF sender_username) in
         let res' = Some {userid = uid; cmd = "d"; success = true;
                          info = String (username); chatid = new_chatid}

@@ -1,6 +1,7 @@
 open Async
 open Client
 
+(* [st] is the initial state of the client. *)
 let st = ref (init_state ())
 
 let b = "\027[0m"
@@ -10,20 +11,22 @@ let purp = "\027[35m"
 let printc_string c s = print_string (c ^ s ^ b)
 let printc_endline c s = print_endline (c ^ s ^ b)
 
+(* [print ()] prints the messages in st.print *)
 let print () =
   let to_print = get_print !st in
   if to_print <> []
   then List.iter (fun x -> print_string (x ^ b ^ "\n")) to_print; ()
 
+(* [read r] performs the read loop of on pipe [r] from the server *)
 let rec read r =
   Reader.read_line r >>= function
   | `Eof -> (printf "Server error, please try again. \n"; exit 0;)
   | `Ok line ->
     st := parse_receive line !st;
-    (*print_endline line;*)
     print ();
     read r
 
+(* [send_msg w]*)
 let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
