@@ -42,11 +42,11 @@ else
   environment=bad
 fi
 
-ANSITERMINAL_VERSION="$(opam info ansiterminal -f installed-version 2>&1)"
-if [[ "$ANSITERMINAL_VERSION" =~ "0.7" && "$ANSITERMINAL_VERSION" =~ "4.05.0" ]]; then
-  echo "ANSITerminal version 0.7 is active.  Good."
+OUNIT_VERSION="$(opam info Emoji -f installed-version 2>&1)"
+if [[ "$EMOJI_VERSION" =~ "1.1.0" && "$EMOJI_VERSION" =~ "4.05.0" ]]; then
+  echo "Emoji version 1.1.0 is active.  Good."
 else
-  echo "ANSITerminal version 0.7 is NOT active.  This is bad."
+  echo "Emoji version 1.1.0 is NOT active.  This is bad."
   environment=bad
 fi
 
