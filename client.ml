@@ -32,9 +32,9 @@ let get_chats st = st.chats |> List.map fst
 
 let change_chat s st =
   if not (List.mem_assoc s st.chats) then
-    {st with print = ["#CHANGE_CHAT failed: You are not in chat " ^ purp ^ s ^ red ^ "."]}
+    {st with print = [red ^ "#CHANGE_CHAT failed: You are not in chat " ^ purp ^ s ^ red ^ "."]}
   else if fst st.curr_chat = s then
-    {st with print = ["#CHANGE_CHAT failed: You are already in the chat."]}
+    {st with print = [red ^ "#CHANGE_CHAT failed: You are already in the chat."]}
   else {
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
@@ -191,7 +191,7 @@ let parse_receive s st =
           chats = List.remove_assoc info st.chats;
           print = [red ^ "Your request is confirmed. Returning to " ^ purp ^ "lobby" ^ red ^ "..."]
         }
-        | 'j' -> begin
+        | 'j' -> begin 
           if ((snd st.curr_chat) <> chatid) then
             {st with print = []}
           else {st with print = color blue [info]}

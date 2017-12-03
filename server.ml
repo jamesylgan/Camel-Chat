@@ -39,6 +39,7 @@ type view_state = {
 let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"
+let blue = "\027[34m"
 
 let init_state () = {
   state = init_state ();
@@ -262,7 +263,7 @@ and disconnected_client st uid conn_uid msg_or_notif =
 and handle_disconnect st uid msg_or_notif =
   try let user_chats = get_chats_of_uid st.state uid in
     let username = get_username st.state uid in
-    let msg = green ^ username ^ red ^ " has left." in
+    let msg = green ^ username ^ red ^ " has left." ^ b in
     let view_state' = List.fold_left
       (fun state cid ->
          (*st := add_msg !st 0 (cid, msg);*)
@@ -276,7 +277,7 @@ and handle_disconnect st uid msg_or_notif =
 let send_msg st uid (chatid, msg) =
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
   try let username = get_username st.state uid in
-    let new_msg = username ^ ": " ^ msg in
+    let new_msg = green ^ username ^ blue ^ ": " ^ msg ^ b in
     let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
