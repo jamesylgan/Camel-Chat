@@ -1,12 +1,19 @@
-open Core
 open Async
 open Client
 
 let st = ref (init_state ())
 
+let b = "\027[0m"
+let red = "\027[31m"
+let purp = "\027[35m"
+
+let printc_string c s = print_string (c ^ s ^ b)
+let printc_endline c s = print_endline (c ^ s ^ b)
+
 let print () =
-  if !st.print <> []
-  then List.iter !st.print (fun x -> print_string (x ^ "\n")); ()
+  let to_print = get_print !st in
+  if to_print <> []
+  then List.iter (fun x -> print_string (x ^ b ^ "\n")) to_print; ()
 
 let rec read r =
   Reader.read_line r >>= function
@@ -68,24 +75,56 @@ let create_user_hardcode username r w =
     print ();
     return ()
 
-let send_cmd r w cmd =
-  Writer.write_line w (parse_send cmd !st);
-  Reader.read_line r >>= function
-  | `Eof -> return ()
-  | `Ok line ->
-    st := parse_receive line !st;
-    print ();
-    return ()
+let rec handle_stdin res w =
+  match res with
+  | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
+  | "#mychats" ->
+    print_string "is my chats\n";
+    let chats = get_chats !st in
+    printc_endline purp (String.concat ", " chats); send_msg w
+  | "#quit" -> exit 0
+  | "#help" -> printc_string red ("help message here\n"); send_msg w
+  | res ->
+    let change_chat = Str.regexp "#goto \\(.+\\)" in
+    if Str.string_match change_chat res 0 then (handle_change_chat res w; send_msg w)
+    else (Writer.write_line w (parse_send res !st); send_msg w)
+
+and handle_change_chat s w =
+  let open String in
+  let start = index s ' ' in
+  let length = length s in
+  let chatname = sub s (start + 1) (length - start - 1) in
+  st := change_chat chatname !st;
+  print ();
+  if (get_print !st = [red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..."])
+  then Writer.write_line w (parse_send "#history" !st)
+
+let rec send_cmd r w lst =
+  match lst with
+  | [] -> return []
+  | cmd::t ->
+    ignore (handle_stdin (cmd |> String.trim |> String.lowercase_ascii) w);
+    Reader.read_line r >>= function
+    | `Eof -> print_endline "comes here?"; return []
+    | `Ok line ->
+      print_endline "never comes here?";
+      st := parse_receive line !st;
+      print_endline "never comes here?";
+      print ();
+      print_endline "never comes here?";
+      send_cmd r w t
 
 let rec open_file addr r w  =
   Reader.file_contents "test1.txt"
-  >>= fun text -> let lst = String.split text ~on:'\n' in
+  >>= fun text -> let lst = Core.String.split text ~on:'\n' in
   match lst with
   | [] -> return ()
   | h::t ->
     print_endline h;
     create_user_hardcode h r w
-    >>= fun () -> List.iter lst (fun cmd -> ignore (send_cmd r w cmd));
+    >>= fun () ->
+    print_string (red ^ "Welcome to the " ^ purp ^ "lobby" ^ red^ "!\n" ^ b);
+    ignore(send_cmd r w t);
     return ()
 (*Reader.open_file "test1.txt" >>= read_file input output addr r w*)
 
