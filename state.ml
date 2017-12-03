@@ -1,5 +1,7 @@
 exception UpdateError of string
 
+let lc =  String.lowercase_ascii
+
 type state = {
   curr_conns: (int * (Async.Reader.t * Async.Writer.t)) list;
   user_list: (int * string) list;
@@ -81,7 +83,7 @@ let add_msg st uid (cid, msg) =
 
 let add_user st uid uname =
   let open List in
-  let user_list' = (uid, uname) :: if st.user_list |> split |> snd |> mem uname
+  let user_list' = (uid, uname) :: if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
                    then raise (UpdateError "Username taken, please try again.")
                    else st.user_list in
   {st with user_list = user_list'}
@@ -96,7 +98,7 @@ let add_pub_chat st uid chatid chatname =
   let chat_msg' = insert chatid [] st.chat_msg in
   let chat_names' =
     (chatname, chatid) ::
-    if List.mem_assoc chatname st.pub_chat_names
+    if List.mem_assoc (lc chatname) (List.map (fun (x,y) -> (lc x, y)) st.pub_chat_names)
     then raise (UpdateError "Chat name taken, please try again.")
     else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names';
@@ -120,11 +122,11 @@ let get_username st uid =
 
 let get_uid st uname =
   try (
-    let inv = Core.List.Assoc.inverse st.user_list in List.assoc uname inv)
+    let inv = Core.List.Assoc.inverse st.user_list in List.assoc (lc uname) (List.map (fun (x,y) -> (lc x, y)) inv))
   with _ -> raise (UpdateError ("User not found"))
 
 let get_chatid st chatname =
-  try List.assoc chatname st.pub_chat_names
+  try List.assoc (lc chatname) (List.map (fun (x,y) -> (lc x, y)) st.pub_chat_names)
   with _ -> raise (UpdateError ("Chat not found"))
 
 let remove_user st uid =

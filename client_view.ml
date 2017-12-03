@@ -103,7 +103,7 @@ let rw_loop r w =
 
 let chat _ r w =
   create_user r w >>= fun () ->
-  print_string (red ^ "Welcome to the " ^ purp ^ "lobby" ^ red^ "!\n" ^ b);
+  print_string (red ^ "Welcome to the " ^ purp ^ "Lobby" ^ red^ "!\n" ^ b);
   rw_loop r w;
   Deferred.never ()
 
