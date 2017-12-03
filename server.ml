@@ -249,6 +249,7 @@ and handle_disconnect st uid =
 let join_chat st uid chatname =
   try let chatid = get_chatid st.state chatname in
     let username = get_username st.state uid in
+    print_endline (username ^ " is joining chat " ^ chatname);
     let state' = add_user_to_pub_chat st.state uid chatid in
     let res' = Some {userid = uid; cmd = "g"; success = true;
                 info = String (chatname); chatid = chatid} in

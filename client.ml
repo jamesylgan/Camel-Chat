@@ -39,7 +39,7 @@ let change_chat s st =
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
     chats = st.chats;
-    print = [red ^ "Entering chat " ^ purp ^ s ^ red ^ "..."];
+    print = [];
   }
 
 let check_chat s st =
@@ -204,7 +204,7 @@ let parse_receive s st =
           {
             userid = st.userid;
             curr_chat = st.curr_chat;
-            chats = (chat_n, chatid) :: st.chats;
+            chats = st.chats;
             print = [green ^ chat_n ^ red ^ msg]
           }
         end
