@@ -178,6 +178,9 @@ and create_success res uid cid sl_len extract_info =
   | "j" -> "s: j" ^ uid ^ cid ^ ", "
            ^ ((String.length (extract_info res.info) |> string_of_int)
               ^ ":" ^ (extract_info res.info))
+  | "k" -> "s: k" ^ uid ^ cid ^ ", "
+           ^ ((String.length (extract_info res.info) |> string_of_int)
+              ^ ":" ^ (extract_info res.info))
   | _ -> failwith "Invalid input command"
 end
 
