@@ -206,7 +206,7 @@ let parse_receive s st =
             userid = st.userid;
             curr_chat = (info, chatid);
             chats = (info, chatid) :: st.chats;
-            print = ["Entering chat " ^ info ^ "..."];
+            print = [red ^ "Entering chat " ^ green ^ info ^ "..."];
         }
 
 (* TODO: Yo James, would you mind work on this?
