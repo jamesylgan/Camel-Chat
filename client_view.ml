@@ -28,7 +28,7 @@ let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; return ())
-  | `Ok line -> handle_stdin line w
+  | `Ok line -> handle_stdin (line |> String.trim |> String.lowercase_ascii) w
 
 and handle_stdin res w =
   match res with
@@ -47,10 +47,11 @@ and handle_change_chat s w =
   let open String in
   let start = index s ' ' in
   let length = length s in
-  let chatname = sub s (start+1) (length - start - 1) in
+  let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  Writer.write_line w (parse_send "#history" !st)
+  if (get_print !st = ["Entering chat " ^ s ^ "..."])
+  then Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
   let stdin = Lazy.force Reader.stdin in
