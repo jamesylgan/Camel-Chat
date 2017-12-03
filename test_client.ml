@@ -44,7 +44,7 @@ let st6 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
   chats = [("cs3110", 42); ("lobby", 0)];
-  print = ["\027[32mJojo:)\027[31m has joined the chat."];
+  print = [];
 }
 
 let parse_create_user_tests = [

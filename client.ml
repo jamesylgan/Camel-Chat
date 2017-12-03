@@ -36,7 +36,7 @@ let change_chat s st =
                 (fun (n, i) -> (String.lowercase_ascii n, i)) in
   if not (List.mem_assoc chat_n chats) then
     {st with print = [red ^ "#CHANGE_CHAT failed: You are not in chat " ^ purp ^ s ^ red ^ "."]}
-  else if fst st.curr_chat |> String.lowercase_ascii = chat_n then
+  else if (st.curr_chat |> fst |> String.lowercase_ascii) = chat_n then
     {st with print = [red ^ "#CHANGE_CHAT failed: You are already in the chat."]}
   else {
     userid = st.userid;

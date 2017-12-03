@@ -135,11 +135,10 @@ let run ~host ~port =
 (* [main ()] is the main function of client server that starts the scheduler
  * and reads from the command line arguments. *)
 let main () =
-  print_endline (Emoji.camel ^ red ^ "  S" ^ yellow ^ "t" ^ green ^ "a" ^
+  print_endline (red ^ "  S" ^ yellow ^ "t" ^ green ^ "a" ^
                  cyan ^ "r" ^ blue ^ "t" ^ purp ^ "i" ^ red ^ "n" ^ yellow ^ "g"
                  ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "l" ^ red ^
-                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t " ^ b ^
-                 Emoji.camel);
+                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t " ^ b);
   printc_string red "Enter a username to begin: \n";
   printc_string red "> ";
   Command.async
