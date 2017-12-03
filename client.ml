@@ -100,20 +100,6 @@ let parse_send s st =
            ":" ^ s ^ chatid
     end
 
-(* A helper function that returns the actual command corresponding to
- * a command_id. *)
-let get_c = function
-  | 'a' -> "#SEND_MSG"
-  | 'b' -> "#GET_HISTORY"
-  | 'c' -> "#GET_ONLINE_USERS"
-  | 'd' -> "#CREATE_PRIV_CHAT"
-  | 'e' -> "#CREATE_PUB_CHAT"
-  | 'f' -> "#CREATE_USER"
-  | 'g' -> "#JOIN_CHAT"
-  | 'h' -> "#LEAVE_CHAT"
-  | 'i'-> "#GET_PUB_CHAT"
-  | others -> failwith "Invalid command id"
-
 (* A helper function for [parse_receive] that extracts infromation from
  * string of the format "<len>:<name>". *)
 let rec extract s acc =
@@ -134,8 +120,7 @@ let parse_receive s st =
   if (String.get s 0) == 'f' then
     let snd_c = index_from s 2 ':' in
     let mes = sub s (snd_c + 1) ((length s) - snd_c - 1) in
-    let p = (get_c c_id) ^ " failed: " ^ mes in
-    {st with print = [red ^ p]}
+    {st with print = [red ^ mes]}
   else let len_of_uid =
         sub s 6 ((index_from s 6 ':')-6)
         |> int_of_string in
