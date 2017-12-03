@@ -137,6 +137,10 @@ let rec string_of_response res =
       | SList x -> List.length x
       | ISList x -> List.length x
       | _ -> failwith "Don't use this not on SList" end in
+  let extract_tuple i =
+    begin match i with
+      | SSTuple i -> i
+      | _ -> failwith "Don't use this not on tuple" end in
   let extract_info i =
     begin match i with
     | String i -> i
@@ -152,11 +156,11 @@ let rec string_of_response res =
       end in formlist x ""
     | _ -> failwith "Don't use this not on info" end in
   begin match res.success with
-  | true -> create_success res uid cid sl_len extract_info
+  | true -> create_success res uid cid sl_len extract_tuple extract_info
   | false -> "f: " ^ res.cmd ^ ", "
              ^ (length (extract_info res.info) |> string_of_int) ^ ":"
              ^ (extract_info res.info) end
-and create_success res uid cid sl_len extract_info =
+and create_success res uid cid sl_len extract_tuple extract_info =
   let open String in
   begin match res.cmd with
   | "a" -> "s: a" ^ uid
@@ -182,9 +186,13 @@ and create_success res uid cid sl_len extract_info =
   | "j" -> "s: j" ^ uid ^ cid ^ ", "
            ^ ((String.length (extract_info res.info) |> string_of_int)
               ^ ":" ^ (extract_info res.info))
-  | "k" -> "s: k" ^ uid ^ cid ^ ", "
-           ^ ((String.length (extract_info res.info) |> string_of_int)
-              ^ ":" ^ (extract_info res.info))
+  | "k" -> begin
+    let chat_n = res.info |> extract_tuple |> fst in
+    let msg = res.info |> extract_tuple |> snd in
+    "s: k" ^ uid ^ cid ^ ", "
+    ^ (chat_n |> String.length |> string_of_int) ^ ":"
+    ^ chat_n ^ ", " ^ (msg |> String.length |> string_of_int) ^ ":" ^ msg
+  end
   | _ -> failwith "Invalid input command"
 end
 
