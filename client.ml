@@ -35,7 +35,7 @@ let change_chat s st =
     userid = st.userid;
     curr_chat = (s, (List.assoc s st.chats));
     chats = st.chats;
-    print = [red ^ "Your request is accepted! Switching to " ^ s ^ "..."];
+    print = [red ^ "Chatting with to " ^ s ^ "..."];
   }
 
 let check_chat s st =
@@ -196,7 +196,7 @@ let parse_receive s st =
             userid = st.userid;
             curr_chat = st.curr_chat;
             chats = (info, chatid) :: st.chats;
-            print = [green ^ info ^ red ^ " has initiated a new chat with you !"]
+            print = [green ^ info ^ red ^ " has started a chat with you!"]
           }
 (* d, e, g all give the same thing, assuming that the [curr_chatid]
   is automaticially swtiched to that of any newly created chat. *)
