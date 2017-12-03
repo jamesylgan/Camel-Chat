@@ -1,6 +1,14 @@
 open OUnit2
 open Client
 
+let red = "\027[31m"
+let blue = "\027[34m"
+let green = "\027[32m"
+let purp = "\027[35m"
+let cyan = "\027[36m"
+
+let color c lst = List.map (fun x -> c ^ x) lst
+
 let st0 = init_state ()
 let st1 = {
   userid = 1;
@@ -18,25 +26,25 @@ let st3 = {
   userid = 1;
   curr_chat = ("cs3110", 42);
   chats = [("cs3110", 42); ("lobby", 0)];
-  print = ["Your request is accepted :)"];
+  print = [red ^ "Entering chat " ^ purp ^ "cs3110" ^ red ^ "..."];
 }
 let st4 = {
   userid = 10;
   curr_chat = ("cornell", 15);
   chats = [("cornell", 15); ("cs3110", 42); ("lobby", 0)];
-  print = ["Your request is accepted :)"];
+  print = [red ^ "Entering chat " ^ purp ^ "cornell" ^ red ^ "..."];
 }
 let st5 = {
   userid = 1;
   curr_chat = ("lobby", 0);
-  chats = [("Jack", 42); ("lobby", 0)];
-  print = ["Jack has initiated a new chat with you !"];
+  chats = [("Josh", 2); ("lobby", 0)];
+  print = ["\027[32mJosh\027[31m has started a chat with you!"];
 }
 let st6 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
-  chats = [("Jojo:)", 15); ("cs3110", 42); ("lobby", 0)];
-  print = ["Jojo:) has initiated a new chat with you !"];
+  chats = [("Jojo:)", 2); ("cs3110", 42); ("lobby", 0)];
+  print = ["\027[32mJojo:)\027[31m has started a chat with you:)"];
 }
 
 let parse_create_user_tests = [
@@ -80,16 +88,16 @@ let parse_receive_tests = [
   (* Test cases on response "get_history". *)
   "GET_HISTORY0" >:: (fun _ -> assert_equal {st1 with print = []}
                          (parse_receive "s: b, 1:1, 0:" st1));
-  "GET_HISTORY1" >:: (fun _ -> assert_equal {st1 with print = ["Tim:Hello"]}
+  "GET_HISTORY1" >:: (fun _ -> assert_equal {st1 with print = color cyan ["Tim:Hello"]}
                          (parse_receive "s: b, 1:1, 1:9:Tim:Hello" st1));
-  "GET_HISTORY2" >:: (fun _ -> assert_equal {st2 with print = ["Tim:Hello"; "Jack:Hi"; "Tim:How's your day?"]}
+  "GET_HISTORY2" >:: (fun _ -> assert_equal {st2 with print = color cyan ["Tim:Hello"; "Jack:Hi"; "Tim:How's your day?"]}
                          (parse_receive "s: b, 2:10, 3:9:Tim:Hello7:Jack:Hi19:Tim:How's your day?" st2));
   (* Test cases on response "get online users". *)
-  "GET_ONLINE_USERS0" >:: (fun _ -> assert_equal {st1 with print = ["No users online currently."]}
+  "GET_ONLINE_USERS0" >:: (fun _ -> assert_equal {st1 with print = [red^"No users online currently."]}
                               (parse_receive "s: c, 0:" st1));
-  "GET_ONLINE_USERS1" >:: (fun _ -> assert_equal {st1 with print = ["Clarkson"]}
+  "GET_ONLINE_USERS1" >:: (fun _ -> assert_equal {st1 with print = color green ["Clarkson"]}
                               (parse_receive "s: c, 1:8:Clarkson" st1));
-  "GET_ONLINE_USERS2" >:: (fun _ -> assert_equal {st2 with print = ["Tim"; "Jack"; "Clarkson"]}
+  "GET_ONLINE_USERS2" >:: (fun _ -> assert_equal {st2 with print = color green ["Tim"; "Jack"; "Clarkson"]}
                               (parse_receive "s: c, 3:3:Tim4:Jack8:Clarkson" st2));
   (* Test cases on response "create_priv_chat". *)
   "CREATE_PRIV_CHAT1" >:: (fun _ -> assert_equal st3 (parse_receive "s: d, 1:1, 2:42, 6:cs3110" st1));
@@ -98,33 +106,35 @@ let parse_receive_tests = [
   "CREATE_PUB_CHAT1" >:: (fun _ -> assert_equal st3 (parse_receive "s: e, 1:1, 2:42, 6:cs3110" st1));
   "CREATE_PUB_CHAT2" >:: (fun _ -> assert_equal st4 (parse_receive "s: e, 2:10, 2:15, 7:cornell" st2));
   (* Test case on response "create_user". *)
-  "CREATE_USER0" >:: (fun _ -> assert_equal {st1 with print = ["Your username is accepted :D"]}
+  "CREATE_USER0" >:: (fun _ -> assert_equal {st1 with print = []}
                          (parse_receive "s: f, 1:1" st0));
   (* Test cases on response "Join_chat". *)
   "JOIN_CHAT1" >:: (fun _ -> assert_equal st3 (parse_receive "s: g, 1:1, 2:42, 6:cs3110" st1));
   "JOIN_CHAT2" >:: (fun _ -> assert_equal st4 (parse_receive "s: g, 2:10, 2:15, 7:cornell" st2));
   (* Test case on response "leave_chat". *)
-  "LEAVE_CHAT0" >:: (fun _ -> assert_equal {st1 with print = ["Your request is confirmed. Returning to lobby..."]}
+  "LEAVE_CHAT0" >:: (fun _ -> assert_equal {st1 with print = [red ^ "Returning to " ^ purp ^ "lobby" ^ red ^ "..."]}
                         (parse_receive "s: h, 1:1, 2:42, 6:cs3110" st3));
-  (* Test cases on response "chat_notification". *)
-  "CHAT_NOTIFICATION1" >:: (fun _ -> assert_equal st5 (parse_receive "s: k, 1:1, 2:42, 4:Jack" st1));
-  "CHAT_NOTIFICATION2" >:: (fun _ -> assert_equal st6 (parse_receive "s: k, 2:10, 2:15, 6:Jojo:)" st2));
+(* Test cases on response "chat_notification". *)
+  "CHAT_NOTIFICATION1" >:: (fun _ -> assert_equal st5
+                               (parse_receive "s: k, 1:1, 1:2, 4:Josh, 29: has started a chat with you!" st1));
+  "CHAT_NOTIFICATION2" >:: (fun _ -> assert_equal st6
+                               (parse_receive "s: k, 2:10, 1:2, 6:Jojo:), 30: has started a chat with you:)" st2));
   (* Test cases on response "get_pub_chat". *)
-  "GET_PUB_CHAT0" >:: (fun _ -> assert_equal {st1 with print = ["No public chats available currently."]}
+  "GET_PUB_CHAT0" >:: (fun _ -> assert_equal {st1 with print = [red^"No public chats available currently."]}
                          (parse_receive "s: i, 1:1, 0:" st1));
-  "GET_PUB_CHAT1" >:: (fun _ -> assert_equal {st1 with print = ["cs3110"]}
+  "GET_PUB_CHAT1" >:: (fun _ -> assert_equal {st1 with print = color purp ["cs3110"]}
                          (parse_receive "s: i, 2:10, 1:6:cs3110" st1));
-  "GET_PUB_CHAT2" >:: (fun _ -> assert_equal {st2 with print = ["cs3110"; "cornell"; "cs:)"]}
+  "GET_PUB_CHAT2" >:: (fun _ -> assert_equal {st2 with print = color purp ["cs3110"; "cornell"; "cs:)"]}
                           (parse_receive "s: i, 2:10, 3:6:cs31107:cornell4:cs:)" st2));
 (* Test cases on response "receive_msg". *)
   "RECEIVE_MSG1" >:: (fun _ -> assert_equal {st1 with print = []}
                          (parse_receive "s: j, 1:1, 2:42, 14:Hi everyone :D" st1));
-  "RECEIVE_MSG2" >:: (fun _ -> assert_equal {st2 with print = ["Hi everyone :D"]}
+  "RECEIVE_MSG2" >:: (fun _ -> assert_equal {st2 with print = color blue ["Hi everyone :D"]}
                          (parse_receive "s: j, 1:1, 2:42, 14:Hi everyone :D" st2));
 (* Test cases on response "failure". *)
-  "FAILURE1" >:: (fun _ -> assert_equal {st1 with print = ["#CREATE_PUB_CHAT failed: Chat name already taken :("]}
+  "FAILURE1" >:: (fun _ -> assert_equal {st1 with print = [red^"#CREATE_PUB_CHAT failed: Chat name already taken :("]}
                      (parse_receive "f: e, 26:Chat name already taken :(" st1));
-  "FAILURE2" >:: (fun _ -> assert_equal {st2 with print = ["#JOIN_CHAT failed: The intended chat is not available."]}
+  "FAILURE2" >:: (fun _ -> assert_equal {st2 with print = [red^"#JOIN_CHAT failed: The intended chat is not available."]}
                      (parse_receive "f: g, 35:The intended chat is not available." st2));
 ]
 

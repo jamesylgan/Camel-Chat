@@ -196,12 +196,18 @@ let parse_receive s st =
             {st with print = []}
           else {st with print = color blue [info]}
         end
-        | 'k' -> {
+        | 'k' -> begin
+            let chat_len = (sub s (trd_comma + 2) (fth_c - trd_comma - 2)) |> int_of_string in
+            let chat_n = sub s (fth_c + 1) chat_len in
+            let fifth_c = index_from s (fth_c + chat_len + 1) ':' in
+            let msg = sub s (fifth_c + 1) ((length s) - fifth_c - 1) in
+          {
             userid = st.userid;
             curr_chat = st.curr_chat;
-            chats = (info, chatid) :: st.chats;
-            print = [green ^ info ^ red ^ " has started a chat with you!"]
+            chats = (chat_n, chatid) :: st.chats;
+            print = [green ^ chat_n ^ red ^ msg]
           }
+        end
 (* d, e, g all give the same thing, assuming that the [curr_chatid]
   is automaticially swtiched to that of any newly created chat. *)
         | same -> {
