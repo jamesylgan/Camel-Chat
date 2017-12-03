@@ -51,10 +51,7 @@ let get_pub_chats st =
   if x = [] then raise(UpdateError "No public chats") else x
 
 let get_users_of_chat st cid =
-  try
-    (let x = (try List.assoc cid st.pub_chat_list
-              with _ -> List.assoc cid st.priv_chat_list) in
-     if x = [] then raise (UpdateError "No users in chat") else x)
+  try (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list)
   with _-> raise (UpdateError "Error")
 
 let get_conns_of_chat st chatid uid =
