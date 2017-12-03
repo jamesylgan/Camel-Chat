@@ -2,7 +2,7 @@ open State
 open Async
 
 type info = Nil | String of string | ISList of (int * string) list |
-            Int of int | SList of string list
+            Int of int | SList of string list | SSTuple of (string * string)
 
 type command =
   | Create_user of string (* username *)
@@ -199,12 +199,54 @@ let get_users st uid =
       {userid = uid; cmd = "c"; success = false; info = String err; chatid = -1}
     in {st with response = res'}
 
+(* does nothing if server broadcasting to disconnected client *)
+let rec broadcast_to_chat st uid (chatid, msg) msg_or_notif =
+  print_string ("broadcasting to chat " ^ string_of_int chatid ^ "\n");
+  let conn_lst = get_conns_of_chat st.state chatid uid in
+  let iter_helper chatid msg uid st (conn_uid,(_,w)) =
+    print_string (string_of_int conn_uid ^ ": ");
+    let res_msg =
+      match msg_or_notif with
+      | `MSG ->
+        string_of_response {userid = conn_uid; cmd = "j"; success = true;
+                            info = String msg; chatid = chatid}
+      | `NOTIF s ->
+        string_of_response {userid = conn_uid; cmd = "k"; success = true;
+                            info = SSTuple (s, msg);
+                            chatid = chatid} in
+    print_string (res_msg ^ "\n");
+    if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
+    else disconnected_client st uid conn_uid msg_or_notif in
+  List.fold_left (iter_helper chatid msg uid) st conn_lst
+
+and disconnected_client st uid conn_uid msg_or_notif =
+  if uid = 0 then st (* server is broadcasting *)
+  else
+    (print_string ("client " ^ string_of_int conn_uid ^ " has disconnected\n");
+     handle_disconnect st conn_uid)
+
+and handle_disconnect st uid =
+  try let user_chats = get_chats_of_uid st.state uid in
+    let username = get_username st.state uid in
+    let msg = " has left the chat." in
+    let view_state' = List.fold_left
+        (fun state cid ->
+           (*st := add_msg !st 0 (cid, msg);*)
+           broadcast_to_chat st 0 (cid,msg) (`NOTIF username)
+        ) st user_chats in
+    let state' = remove_user view_state'.state uid in
+    {view_state' with state = state'}
+  with UpdateError err -> print_string err; st
+
 let join_chat st uid chatname =
   try let chatid = get_chatid st.state chatname in
+    let username = get_username st.state uid in
     let state' = add_user_to_pub_chat st.state uid chatid in
     let res' = Some {userid = uid; cmd = "g"; success = true;
                 info = String (chatname); chatid = chatid} in
-    {st with state = state'; response = res'}
+    let view_state' = {st with state = state'; response = res'} in
+    broadcast_to_chat view_state' 0
+      (chatid, (" has joined the chat")) (`NOTIF username)
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "g"; success = false;
                      info = String err; chatid = -1} in
@@ -212,10 +254,13 @@ let join_chat st uid chatname =
 
 let leave_chat st uid chatname =
   try let chatid = get_chatid st.state chatname in
+    let username = get_username st.state uid in
     let state' = remove_from_chat st.state uid chatid in
     let res' = Some {userid = uid; cmd = "h"; success = true;
                      info = String (chatname); chatid = chatid} in
-    {st with state = state'; response = res'}
+    let view_state' = {st with state = state'; response = res'} in
+    broadcast_to_chat view_state' 0
+      (chatid, (" has left the chat")) (`NOTIF username)
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "h"; success = false;
                      info = String err; chatid = -1} in
@@ -234,6 +279,7 @@ let create_user st username r w =
     let res' = Some {userid = -1; cmd = "f"; success = false; info = String err;
                      chatid = -1} in
     {st with response = res'}
+
 
 (* does nothing if server broadcasting to disconnected client *)
 let rec broadcast_to_chat st uid (chatid, msg) msg_or_notif =
