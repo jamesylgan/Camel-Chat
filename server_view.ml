@@ -1,15 +1,10 @@
 open Async
 open Server
 
+(* [st] is the initialized view_state of the server *)
 let st = ref (init_state ())
 
-(*let uid = ref (0)
-let next_uid = fun () -> uid := (!uid) + 1; !uid
-let prev_uid = fun () -> uid := (!uid) - 1; !uid
-let chatid = ref (0)
-let next_chatid = fun () -> chatid := (!chatid) + 1; !chatid
-let prev_chatid = fun () -> chatid := (!chatid) - 1; !chatid *)
-
+(* [handle_connection] is the *)
 let handle_connection _addr r w =
   let () = print_string ("New client \n") in
   let rec loop r w =

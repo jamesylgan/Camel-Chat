@@ -264,6 +264,7 @@ let join_chat st uid chatname =
 let leave_chat st uid chatname =
   try let chatid = get_chatid st.state chatname in
     let username = get_username st.state uid in
+    print_endline (username ^ " is leaving chat " ^ chatname);
     let state' = remove_from_chat st.state uid chatid in
     let res' = Some {userid = uid; cmd = "h"; success = true;
                      info = String (chatname); chatid = chatid} in
@@ -276,7 +277,7 @@ let leave_chat st uid chatname =
     {st with response = res'}
 
 let create_user st username r w =
-  print_string "creating new user\n";
+  print_string "Creating new user\n";
   let new_uid = st.uid + 1 in
   try let state1 = add_user st.state new_uid username in
     let state2 = add_user_to_pub_chat state1 new_uid 0 in
@@ -325,7 +326,7 @@ let rec create_private_chat st uid username =
     else
       begin
         let new_chatid = st.chatid + 1 in
-        print_endline ("creating priv chat with " ^ username ^ " of chatid " ^
+        print_endline ("Creating priv chat with " ^ username ^ " of chatid " ^
                        string_of_int new_chatid);
         let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
         let view_state1 = {st with state = state1} in
@@ -343,7 +344,11 @@ let rec create_private_chat st uid username =
     {st with response = res'}
 
 let create_pub_chat st uid chatname =
+<<<<<<< HEAD
   (*print*)
+=======
+  print_endline ("Creating pub chat " ^ chatname);
+>>>>>>> b0f385f32059daf3353ca04119839f7e541c874a
   let new_chatid = st.chatid + 1 in
   try let state' = add_pub_chat st.state uid new_chatid chatname in
     let res' = Some {userid = uid; cmd = "e"; success = true;
@@ -365,8 +370,6 @@ let get_public_chat st uid =
     {st with response = res'}
 
 let parse st str r w =
-  let cmd_lst = Str.split (Str.regexp "$") str in
-  print_endline ("Cmds: "^(String.concat " && " cmd_lst));
   let input = input_of_string str in
   let res = match input.cmd with
     | Create_user s -> create_user st s r w

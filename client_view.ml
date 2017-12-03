@@ -28,7 +28,7 @@ let rec send_msg w =
   let stdin = Lazy.force Reader.stdin in
   Reader.read_line stdin >>= function
   | `Eof -> (printf "Error reading stdin\n"; return ())
-  | `Ok line -> handle_stdin (line |> String.trim |> String.lowercase_ascii) w
+  | `Ok line -> handle_stdin (line |> String.trim) w
 
 and handle_stdin res w =
   match res with
@@ -46,7 +46,7 @@ begin
   st := check_chat res !st;
   if get_print !st = [] then (Writer.write_line w (parse_send res !st); send_msg w)
   else (print (); send_msg w)
-end       
+end
 
 
 and handle_change_chat s w =
