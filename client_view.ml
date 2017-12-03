@@ -50,7 +50,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  if (get_print !st = [red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..."])
+  if (get_print !st <> [])
   then Writer.write_line w (parse_send "#history" !st)
 
 let rec create_user r w =
