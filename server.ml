@@ -320,18 +320,23 @@ let res' = Some {userid = uid; cmd = "b"; success = false;
 let rec create_private_chat st uid username =
   try let accepting_uid = get_uid st.state username in
     let sender_username = get_username st.state uid in
-    let new_chatid = st.chatid + 1 in
-    print_endline ("creating priv chat with " ^ username ^ " of chatid " ^
-                   string_of_int new_chatid);
-    let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
-    let view_state1 = {st with state = state1} in
-    let view_state2 =
-      broadcast_to_chat view_state1 uid
-      (new_chatid, (""))
-      (`NOTIF sender_username) in
-    let res' = Some {userid = uid; cmd = "d"; success = true;
-                     info = String (username); chatid = new_chatid}
-    in {view_state2 with response = res'; chatid = new_chatid}
+    if username = sender_username
+    then raise (UpdateError "You can't start a chat with yourself!")
+    else
+      begin
+        let new_chatid = st.chatid + 1 in
+        print_endline ("creating priv chat with " ^ username ^ " of chatid " ^
+                       string_of_int new_chatid);
+        let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
+        let view_state1 = {st with state = state1} in
+        let view_state2 =
+          broadcast_to_chat view_state1 uid
+          (new_chatid, (""))
+          (`NOTIF sender_username) in
+        let res' = Some {userid = uid; cmd = "d"; success = true;
+                         info = String (username); chatid = new_chatid}
+        in {view_state2 with response = res'; chatid = new_chatid}
+      end
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "d"; success = false;
                      info = String err; chatid = -1} in
