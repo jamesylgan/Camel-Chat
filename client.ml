@@ -63,13 +63,8 @@ let check_chat s st =
     else {st with print = [red ^ "Error: You are already in the chat!"]}
   else if (Str.string_match leave_chat s 0)
   then let name = sub s 7 ((length s) - 7) |> String.lowercase_ascii in
-<<<<<<< HEAD
     if (List.mem_assoc name chats_low) then {st with print = []}
     else if name = "lobby" then {st with print = [red ^ "Error: You can't leave the lobby!"]}
-=======
-    if (List.mem_assoc name st.chats) then {st with print = []}
-    else if name = "lobby" then {st with print = [red ^ "Error: You can't leave the Lobby!"]}
->>>>>>> 05074dee4cad4f780def8db637392dc7d0386ccb
     else {st with print = [red ^ "Error: You are not in chat " ^ purp ^ name]}
   else {st with print = []}
 
