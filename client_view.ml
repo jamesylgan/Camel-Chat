@@ -70,7 +70,7 @@ and handle_change_chat s w =
   st := change_chat chatname !st;
   print ();
   if (get_print !st = [])
-  then (print_endline (red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "...");
+  then (print_endline (red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..." ^ b);
         Writer.write_line w (parse_send "#history" !st))
 
 (* [create_user r w] is sends the username from standard input to the server.
@@ -121,7 +121,8 @@ let rw_loop r w =
  * create_user, the function starts the read write loop and never returns. *)
 let chat _ r w =
   create_user r w >>= fun () ->
-  print_string (red ^ "Welcome to the " ^ purp ^ "Lobby" ^ red^ "!\n" ^ b);
+  print_string (red ^ "Welcome to the " ^ purp ^ "Lobby" ^ red^ "!\nType "
+                ^ blue ^ "#help" ^ red ^ " for instructions!\n" ^ b);
   rw_loop r w;
   Deferred.never ()
 
@@ -135,10 +136,10 @@ let run ~host ~port =
 (* [main ()] is the main function of client server that starts the scheduler
  * and reads from the command line arguments. *)
 let main () =
-  print_endline (red ^ "  S" ^ yellow ^ "t" ^ green ^ "a" ^
+  print_endline (red ^ "S" ^ yellow ^ "t" ^ green ^ "a" ^
                  cyan ^ "r" ^ blue ^ "t" ^ purp ^ "i" ^ red ^ "n" ^ yellow ^ "g"
                  ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "l" ^ red ^
-                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t " ^ b);
+                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t" ^ b);
   printc_string red "Enter a username to begin: \n";
   printc_string red "> ";
   Command.async
