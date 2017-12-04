@@ -129,7 +129,9 @@ let get_chatid st chatname =
 let get_chat_info st chatname =
   try
     (let lst = List.filter (fun (cname, cid) -> lc cname = lc chatname)
-         st.pub_chat_names in
+         st.pub_chat_names @
+               List.filter (fun (cname, cid) -> lc cname = lc chatname)
+              st.pub_chat_names in
      match lst with
      | [] -> raise (UpdateError ("Chat not found"))
      | h::t -> h )

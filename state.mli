@@ -97,7 +97,7 @@ val get_username: state -> int -> string
 val get_uid: state -> string -> int
 
 (* [get_chatid st chatname] is the chatid associated with [chatname] in
- * st.pub_chat_names.
+ * st.pub_chat_names st.priv_chat_list
  * -raises: UpdateError "Chat not found" if [chatid] is not a current chat id.*)
 val get_chatid: state -> string -> int
 
@@ -109,4 +109,4 @@ val remove_user: state -> int -> state
  * -raises: UpdateError "Chat not found" if [chatid] is not a current chat id.*)
 val remove_from_chat: state -> int -> int -> state
 
-val get_chat_info: state -> string -> (string * int) 
+val get_chat_info: state -> string -> (string * int)
