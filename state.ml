@@ -2,6 +2,14 @@ exception UpdateError of string
 
 let lc =  String.lowercase_ascii
 
+(* [fst_lc lst] is the association list that is the same as [lst], except that
+ * the first value in each pair has been changed to lowercase. *)
+let fst_lc = List.map (fun (x,y) -> (lc x, y))
+
+(* [snd_lc lst] is the association list that is the same as [lst], except that
+ * the second value in each pair has been changed to lowercase. *)
+let snd_lc = List.map (fun (x,y) -> (x, lc y))
+
 type state = {
   curr_conns: (int * (Async.Reader.t * Async.Writer.t)) list;
   user_list: (int * string) list;
@@ -80,7 +88,9 @@ let add_msg st uid (cid, msg) =
 
 let add_user st uid uname =
   let open List in
-  let user_list' = (uid, uname) :: if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
+  let user_list' = (uid, uname) ::
+                   if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
+                      || (List.mem_assoc (lc uname) (fst_lc st.pub_chat_names))
                    then raise (UpdateError "Username taken, please try again.")
                    else st.user_list in
   {st with user_list = user_list'}
@@ -93,9 +103,11 @@ let add_conn st uid (r,w) =
 let add_pub_chat st uid chatid chatname =
   let chat_lst' = insert chatid [uid] st.pub_chat_list in
   let chat_msg' = insert chatid [] st.chat_msg in
+  let inv = Core.List.Assoc.inverse st.user_list in
   let chat_names' =
     (chatname, chatid) ::
-    if List.mem_assoc (lc chatname) (List.map (fun (x,y) -> (lc x, y)) st.pub_chat_names)
+    if List.mem_assoc (lc chatname) (fst_lc st.pub_chat_names)
+       || List.mem_assoc (lc chatname) (fst_lc inv)
     then raise (UpdateError "Chat name taken, please try again.")
     else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names';
@@ -119,11 +131,11 @@ let get_username st uid =
 
 let get_uid st uname =
   try (
-    let inv = Core.List.Assoc.inverse st.user_list in List.assoc (lc uname) (List.map (fun (x,y) -> (lc x, y)) inv))
+    let inv = Core.List.Assoc.inverse st.user_list in List.assoc (lc uname) (fst_lc inv))
   with _ -> raise (UpdateError ("User not found"))
 
 let get_chatid st chatname =
-  try List.assoc (lc chatname) (List.map (fun (x,y) -> (lc x, y)) st.pub_chat_names)
+  try List.assoc (lc chatname) (fst_lc st.pub_chat_names)
   with _ -> raise (UpdateError ("Chat not found"))
 
 let get_chat_info st chatname =
