@@ -108,6 +108,13 @@ let parse_send s st =
            ":" ^ s ^ chatid
     end
 
+let rec check_lower lst cname acc =
+  match lst with
+  | [] -> List.rev acc
+  | (chatname, chatid)::t ->
+    if String.lowercase_ascii chatname = String.lowercase_ascii cname
+    then List.rev_append acc t else check_lower t cname ((chatname, chatid)::acc)
+
 (* A helper function for [parse_receive] that extracts infromation from
  * string of the format "<len>:<name>". *)
 let rec extract s acc =
@@ -181,7 +188,7 @@ let parse_receive s st =
         | 'h' -> {
           userid = st.userid;
           curr_chat = ("Lobby", 0);
-          chats = List.remove_assoc info st.chats;
+          chats = check_lower st.chats info [];
           print = [red ^ "Returning to " ^ purp ^ "Lobby" ^ red ^ "..."]
         }
         | 'j' -> begin
