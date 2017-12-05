@@ -248,16 +248,16 @@ and handle_disconnect st uid =
 
 let join_chat st uid chatname =
   try let (cname, chatid) = get_chat_info st.state chatname in
+    print_endline (string_of_int chatid);
     let username = get_username st.state uid in
     print_endline (username ^ " is joining chat " ^ cname);
     let state' = add_user_to_pub_chat st.state uid chatid in
     let res' = Some {userid = uid; cmd = "g"; success = true;
                 info = String (cname); chatid = chatid} in
     let view_state' = {st with state = state'; response = res'} in
-    ignore(broadcast_to_chat view_state' 0
-       (chatid, (" has joined the chat")) (`NOTIF username));
-    view_state'
-  with UpdateError err ->
+    broadcast_to_chat view_state' 0
+      (chatid, (" has joined the chat")) (`NOTIF username)
+with UpdateError err ->
     let res' = Some {userid = uid; cmd = "g"; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
@@ -270,9 +270,8 @@ let leave_chat st uid chatname =
     let res' = Some {userid = uid; cmd = "h"; success = true;
                      info = String (chatname); chatid = chatid} in
     let view_state' = {st with state = state'; response = res'} in
-    ignore(broadcast_to_chat view_state' 0
-             (chatid, (" has left the chat")) (`NOTIF username));
-    view_state'
+    broadcast_to_chat view_state' 0
+             (chatid, (" has left the chat")) (`NOTIF username)
   with UpdateError err ->
     let res' = Some {userid = uid; cmd = "h"; success = false;
                      info = String err; chatid = -1} in
