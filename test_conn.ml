@@ -128,9 +128,12 @@ let rec open_file addr r w  =
     return ()
 (*Reader.open_file "test1.txt" >>= read_file input output addr r w*)
 
+let x = ref 0
+
+
 let run ~host ~port () : unit Async_extra.Import.Deferred.t =
-  let addr = Tcp.to_host_and_port host port in
-  Tcp.with_connection addr open_file
+  (after (Core.sec 5.)) >>= (fun () -> print_endline ("fst"); return ())
+  >>= fun () -> (after (Core.sec 3.)) >>= fun () -> x := !x + 1; print_endline ("snd"); return(); Deferred.never ()
 
 let main () =
   print_string "Starting Caml Chat... \n";
