@@ -109,4 +109,8 @@ val remove_user: state -> int -> state
  * -raises: UpdateError "Chat not found" if [chatid] is not a current chat id.*)
 val remove_from_chat: state -> int -> int -> state
 
+(* [get_chat_info st chatname] is a tuple of the chatname and chatid *)
 val get_chat_info: state -> string -> (string * int)
+
+(* [is_username st uname] is true if [uname] is a username; false otherwise. *)
+val is_username : state -> string -> bool

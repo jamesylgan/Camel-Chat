@@ -126,6 +126,10 @@ let add_user_to_pub_chat st uid cid =
   {st with pub_chat_list = chat_lst'})
   with _ -> raise (UpdateError "Chat not found")
 
+let is_username st chatname =
+  List.fold_left (fun acc (uid, uname) ->
+      if uname = chatname then acc else true || acc) false st.user_list
+
 let get_username st uid =
   try List.assoc uid st.user_list with _ -> raise (UpdateError "User not found")
 

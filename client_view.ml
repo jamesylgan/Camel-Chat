@@ -47,7 +47,18 @@ and handle_stdin res w =
     let chats = get_chats !st in
     printc_endline purp (String.concat ", " chats); send_msg w
   | "#quit" -> exit 0
-  | "#help" -> printc_string red ("help message here\n"); send_msg w
+  | "#help" -> printc_string red ("Get current chat history: #history
+Create private chat with another user: #chatwith <username>
+Create a public chat: #makechat <chat name>
+Join a new chat: #join <chat name>
+Leave a chat: #leave <chat name>
+See a list of users currently online: #users
+See a list of ongoing public chats: #pubchats
+See a list of chats you are currently in: #mychats
+See which chat you are currently viewing: #currchat
+View a different chat that you are in: #goto <chat name>
+Quit out of Camel Chat: #quit
+View this message again: #help\n"); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0
@@ -138,8 +149,9 @@ let run ~host ~port =
 let main () =
   print_endline (red ^ "S" ^ yellow ^ "t" ^ green ^ "a" ^
                  cyan ^ "r" ^ blue ^ "t" ^ purp ^ "i" ^ red ^ "n" ^ yellow ^ "g"
-                 ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "l" ^ red ^
-                 " C" ^ yellow ^ "h" ^ green ^ "a" ^ cyan ^ "t" ^ b);
+                 ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "e" ^ red
+                 ^ "l" ^ yellow ^ " C" ^ green ^ "h" ^ cyan ^ "a" ^ blue
+                 ^ "t" ^ b);
   printc_string red "Enter a username to begin: \n";
   printc_string red "> ";
   Command.async
