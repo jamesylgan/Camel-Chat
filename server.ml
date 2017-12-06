@@ -289,7 +289,11 @@ let leave_chat st uid chatname =
     broadcast_to_chat view_state' 0
              (chatid, (" has left the chat")) (`NOTIF username)
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
+    let res' = if is_username st.state chatname then
+    Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
+          info = String "You can't leave a private chat!"; chatid = -1} 
+      else
+    Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
 
