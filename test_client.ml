@@ -12,38 +12,38 @@ let color c lst = List.map (fun x -> c ^ x) lst
 let st0 = init_state ()
 let st1 = {
   userid = 1;
-  curr_chat = ("lobby", 0);
-  chats = [("lobby", 0)];
+  curr_chat = ("Lobby", 0);
+  chats = [("Lobby", 0)];
   print = [];
 }
 let st2 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
-  chats = [("cs3110", 42); ("lobby", 0)];
+  chats = [("cs3110", 42); ("Lobby", 0)];
   print = ["default"];
 }
 let st3 = {
   userid = 1;
   curr_chat = ("cs3110", 42);
-  chats = [("cs3110", 42); ("lobby", 0)];
+  chats = [("cs3110", 42); ("Lobby", 0)];
   print = [red ^ "Entering chat " ^ purp ^ "cs3110" ^ red ^ "..."];
 }
 let st4 = {
   userid = 10;
   curr_chat = ("cornell", 15);
-  chats = [("cornell", 15); ("cs3110", 42); ("lobby", 0)];
+  chats = [("cornell", 15); ("cs3110", 42); ("Lobby", 0)];
   print = [red ^ "Entering chat " ^ purp ^ "cornell" ^ red ^ "..."];
 }
 let st5 = {
   userid = 1;
-  curr_chat = ("lobby", 0);
-  chats = [("Josh", 2); ("lobby", 0)];
+  curr_chat = ("Lobby", 0);
+  chats = [("Josh", 2); ("Lobby", 0)];
   print = ["\027[32mJosh\027[31m has started a chat with you."];
 }
 let st6 = {
   userid = 10;
   curr_chat = ("cs3110", 42);
-  chats = [("cs3110", 42); ("lobby", 0)];
+  chats = [("cs3110", 42); ("Lobby", 0)];
   print = [];
 }
 
@@ -112,7 +112,7 @@ let parse_receive_tests = [
   "JOIN_CHAT1" >:: (fun _ -> assert_equal st3 (parse_receive "s: g, 1:1, 2:42, 6:cs3110" st1));
   "JOIN_CHAT2" >:: (fun _ -> assert_equal st4 (parse_receive "s: g, 2:10, 2:15, 7:cornell" st2));
   (* Test case on response "leave_chat". *)
-  "LEAVE_CHAT0" >:: (fun _ -> assert_equal {st1 with print = [red ^ "Returning to " ^ purp ^ "lobby" ^ red ^ "..."]}
+  "LEAVE_CHAT0" >:: (fun _ -> assert_equal {st1 with print = ["\027[31mReturning to \027[35mLobby\027[31m..."]}
                         (parse_receive "s: h, 1:1, 2:42, 6:cs3110" st3));
 (* Test cases on response "chat_notification". *)
   "CHAT_NOTIFICATION1" >:: (fun _ -> assert_equal st5
