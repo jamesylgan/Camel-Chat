@@ -108,6 +108,8 @@ let parse_send s st =
            ":" ^ s ^ chatid
     end
 
+(* A helper function that checks whether a chat name is in a given list in
+ * case-insensitive manner. *)
 let rec check_lower lst cname acc =
   match lst with
   | [] -> List.rev acc
