@@ -127,20 +127,6 @@ let input_of_string s =
   | 'i' -> {userid = (response_uid s); cmd = Get_public_chats}
   | _ -> failwith "Invalid command ID"
 
-(*let parse str =
- let input = input_of_string str in
- let res = match input.cmd with
-   | Create_user s -> create_user s
-   | Send_msg tup -> send_msg input.userid tup
-   | Get_public_chats -> get_public_chat input.userid
-   | Get_online_users -> get_users input.userid
-   | Join_chat s -> join_chat input.userid s
-   | Get_history chatid -> get_history input.userid chatid
-   | Create_priv_chat username -> create_private_chat input.userid username
-   | Create_pub_chat chatname -> create_pub_chat input.userid chatname
-   | Leave_chat chatname -> leave_chat input.userid chatname in
- string_of_response res*)
-
 let rec string_of_response res =
   let open String in
   let uid = ", " ^ (res.userid |> string_of_int |> length |> string_of_int)
@@ -291,7 +277,7 @@ let leave_chat st uid chatname =
   with UpdateError err ->
     let res' = if is_username st.state chatname then
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
-          info = String "You can't leave a private chat!"; chatid = -1} 
+          info = String "You can't leave a private chat!"; chatid = -1}
       else
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
                      info = String err; chatid = -1} in
