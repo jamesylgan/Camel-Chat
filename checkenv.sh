@@ -42,7 +42,7 @@ else
   environment=bad
 fi
 
-OUNIT_VERSION="$(opam info Emoji -f installed-version 2>&1)"
+EMOJI_VERSION="$(opam info Emoji -f installed-version 2>&1)"
 if [[ "$EMOJI_VERSION" =~ "1.1.0" && "$EMOJI_VERSION" =~ "4.05.0" ]]; then
   echo "Emoji version 1.1.0 is active.  Good."
 else

@@ -35,9 +35,9 @@ let change_chat s st =
   let chats = st.chats |> List.map
                 (fun (n, i) -> (String.lowercase_ascii n, i)) in
   if not (List.mem_assoc chat_n chats) then
-    {st with print = [red ^ "#CHANGE_CHAT failed: You are not in chat " ^ purp ^ s ^ red ^ "."]}
+    {st with print = [red ^ "Error: You are not in chat " ^ purp ^ s ^ red ^ "."]}
   else if (st.curr_chat |> fst |> String.lowercase_ascii) = chat_n then
-    {st with print = [red ^ "#CHANGE_CHAT failed: You are already in the chat."]}
+    {st with print = [red ^ "Error: You are already in the chat."]}
   else {
     userid = st.userid;
     curr_chat = (s, (List.assoc chat_n chats));
@@ -107,6 +107,13 @@ let parse_send s st =
       else "a" ^ uid ^ ", " ^ (s |> length |> string_of_int) ^
            ":" ^ s ^ chatid
     end
+
+let rec check_lower lst cname acc =
+  match lst with
+  | [] -> List.rev acc
+  | (chatname, chatid)::t ->
+    if String.lowercase_ascii chatname = String.lowercase_ascii cname
+    then List.rev_append acc t else check_lower t cname ((chatname, chatid)::acc)
 
 (* A helper function for [parse_receive] that extracts infromation from
  * string of the format "<len>:<name>". *)
@@ -181,7 +188,7 @@ let parse_receive s st =
         | 'h' -> {
           userid = st.userid;
           curr_chat = ("Lobby", 0);
-          chats = List.remove_assoc info st.chats;
+          chats = check_lower st.chats info [];
           print = [red ^ "Returning to " ^ purp ^ "Lobby" ^ red ^ "..."]
         }
         | 'j' -> begin

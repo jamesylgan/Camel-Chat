@@ -36,6 +36,20 @@ type view_state = {
   res_string : string
 }
 
+(* [make_cmd cmd] is the alphabet associated with the command *)
+let make_cmd = function
+  | `SEND_MSG -> "a"
+  | `GET_HISTORY -> "b"
+  | `GET_USERS -> "c"
+  | `CREATE_PRIV_CHAT -> "d"
+  | `CREATE_PUB_CHAT -> "e"
+  | `CREATE_USER -> "f"
+  | `JOIN_CHAT -> "g"
+  | `LEAVE_CHAT -> "h"
+  | `GET_PUB_CHAT -> "i"
+  | `RECEIVE_MSG -> "j"
+  | `CHAT_NOTIF -> "k"
+
 let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"
@@ -200,11 +214,13 @@ end
 let get_users st uid =
   try let users = get_online_users st.state in
     let res' = Some
-      {userid = uid; cmd = "c"; success = true; info = SList users; chatid = -1}
+        {userid = uid; cmd = make_cmd `GET_USERS; success = true;
+         info = SList users; chatid = -1}
     in {st with response = res'}
   with UpdateError err ->
     let res' = Some
-      {userid = uid; cmd = "c"; success = false; info = String err; chatid = -1}
+        {userid = uid; cmd = make_cmd `GET_USERS; success = false;
+         info = String err; chatid = -1}
     in {st with response = res'}
 
 (* does nothing if server broadcasting to disconnected client *)
@@ -216,11 +232,11 @@ let rec broadcast_to_chat st uid (chatid, msg) msg_or_notif =
     let res_msg =
       match msg_or_notif with
       | `MSG ->
-        string_of_response {userid = conn_uid; cmd = "j"; success = true;
-                            info = String msg; chatid = chatid}
+        string_of_response {userid = conn_uid; cmd = make_cmd `RECEIVE_MSG;
+                            success = true; info = String msg; chatid = chatid}
       | `NOTIF s ->
-        string_of_response {userid = conn_uid; cmd = "k"; success = true;
-                            info = SSTuple (s, msg);
+        string_of_response {userid = conn_uid; cmd = make_cmd `CHAT_NOTIF;
+                            success = true; info = SSTuple (s, msg);
                             chatid = chatid} in
     print_string (res_msg ^ "\n");
     if Writer.is_open w then (Writer.write w (res_msg ^"\n"); st)
@@ -247,17 +263,18 @@ and handle_disconnect st uid =
   with UpdateError err -> print_string err; st
 
 let join_chat st uid chatname =
-  try let chatid = get_chatid st.state chatname in
+  try let (cname, chatid) = get_chat_info st.state chatname in
+    print_endline (string_of_int chatid);
     let username = get_username st.state uid in
-    print_endline (username ^ " is joining chat " ^ chatname);
+    print_endline (username ^ " is joining chat " ^ cname);
     let state' = add_user_to_pub_chat st.state uid chatid in
-    let res' = Some {userid = uid; cmd = "g"; success = true;
-                info = String (chatname); chatid = chatid} in
+    let res' = Some {userid = uid; cmd = make_cmd `JOIN_CHAT; success = true;
+                info = String (cname); chatid = chatid} in
     let view_state' = {st with state = state'; response = res'} in
     broadcast_to_chat view_state' 0
       (chatid, (" has joined the chat")) (`NOTIF username)
-  with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "g"; success = false;
+with UpdateError err ->
+    let res' = Some {userid = uid; cmd = make_cmd `JOIN_CHAT; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
 
@@ -266,13 +283,13 @@ let leave_chat st uid chatname =
     let username = get_username st.state uid in
     print_endline (username ^ " is leaving chat " ^ chatname);
     let state' = remove_from_chat st.state uid chatid in
-    let res' = Some {userid = uid; cmd = "h"; success = true;
+    let res' = Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = true;
                      info = String (chatname); chatid = chatid} in
     let view_state' = {st with state = state'; response = res'} in
     broadcast_to_chat view_state' 0
-      (chatid, (" has left the chat")) (`NOTIF username)
+             (chatid, (" has left the chat")) (`NOTIF username)
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "h"; success = false;
+    let res' = Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
 
@@ -282,12 +299,12 @@ let create_user st username r w =
   try let state1 = add_user st.state new_uid username in
     let state2 = add_user_to_pub_chat state1 new_uid 0 in
     let state3 = add_conn state2 new_uid (r,w) in
-    let res' = Some {userid = new_uid; cmd = "f"; success = true; info = Nil;
-                     chatid = 0} in
+    let res' = Some {userid = new_uid; cmd = make_cmd `CREATE_USER;
+                     success = true; info = Nil; chatid = 0} in
     {st with state = state3; response = res'; uid = new_uid}
   with UpdateError err ->
-    let res' = Some {userid = -1; cmd = "f"; success = false; info = String err;
-                     chatid = -1} in
+    let res' = Some {userid = -1; cmd = make_cmd `CREATE_USER;
+                     success = false; info = String err; chatid = -1} in
     {st with response = res'}
 
 (* msg stored includes username *)
@@ -299,22 +316,22 @@ let send_msg st uid (chatid, msg) =
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
     let view_state' = broadcast_to_chat view_state uid (chatid, new_msg) `MSG in
-    let res' = Some {userid = uid; cmd = "a"; success = true; info = Nil;
-                     chatid = chatid} in
+    let res' = Some {userid = uid; cmd = make_cmd `SEND_MSG; success = true;
+                     info = Nil; chatid = chatid} in
     {view_state' with response = res'}
   with UpdateError err ->
     print_endline ("send msg error: " ^ err);
-    let res' = Some {userid = uid; cmd = "a"; success = false;
+    let res' = Some {userid = uid; cmd = make_cmd `SEND_MSG; success = false;
                      info = String err; chatid = -1} in
     {st with response = res'}
 
 let get_history st uid chatid =
   try let history = get_history st.state chatid in
-    let res' = Some {userid = uid; cmd = "b"; success = true; info = ISList history;
-                     chatid = chatid} in
+    let res' = Some {userid = uid; cmd = make_cmd `GET_HISTORY; success = true;
+                     info = ISList history; chatid = chatid} in
     {st with response = res'}
   with UpdateError err ->
-let res' = Some {userid = uid; cmd = "b"; success = false;
+let res' = Some {userid = uid; cmd = make_cmd `GET_HISTORY; success = false;
                  info = String err; chatid = -1} in
     {st with response = res'}
 
@@ -334,35 +351,37 @@ let rec create_private_chat st uid username =
           broadcast_to_chat view_state1 uid
           (new_chatid, (" has started a chat with you."))
           (`NOTIF sender_username) in
-        let res' = Some {userid = uid; cmd = "d"; success = true;
-                         info = String (username); chatid = new_chatid}
+        let res' = Some {userid = uid; cmd = make_cmd `CREATE_PRIV_CHAT;
+                         success = true; info = String (username);
+                         chatid = new_chatid}
         in {view_state2 with response = res'; chatid = new_chatid}
       end
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "d"; success = false;
-                     info = String err; chatid = -1} in
+    let res' = Some {userid = uid; cmd = make_cmd `CREATE_PRIV_CHAT;
+                     success = false; info = String err; chatid = -1} in
     {st with response = res'}
 
 let create_pub_chat st uid chatname =
   print_endline ("Creating pub chat " ^ chatname);
   let new_chatid = st.chatid + 1 in
   try let state' = add_pub_chat st.state uid new_chatid chatname in
-    let res' = Some {userid = uid; cmd = "e"; success = true;
-                     info = String (chatname); chatid = new_chatid}
-    in {st with response = res'; state = state'}
+    let res' = Some {userid = uid; cmd = make_cmd `CREATE_PUB_CHAT;
+                     success = true; info = String (chatname);
+                     chatid = new_chatid}
+    in {st with response = res'; state = state'; chatid = new_chatid}
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "e"; success = false;
-                     info = String err; chatid = -1} in
+    let res' = Some {userid = uid; cmd = make_cmd `CREATE_PUB_CHAT;
+                     success = false; info = String err; chatid = -1} in
     {st with response = res'}
 
 let get_public_chat st uid =
   try let pub_chats = get_pub_chats st.state in
-    let res' = Some {userid = uid; cmd = "i"; success = true;
-                     info = SList pub_chats; chatid = -1} in
+    let res' = Some {userid = uid; cmd = make_cmd `GET_PUB_CHAT;
+                     success = true; info = SList pub_chats; chatid = -1} in
     {st with response = res'}
   with UpdateError err ->
-    let res' = Some {userid = uid; cmd = "i"; success = false;
-                     info = String err; chatid = -1} in
+    let res' = Some {userid = uid; cmd = make_cmd `GET_PUB_CHAT;
+                     success = false; info = String err; chatid = -1} in
     {st with response = res'}
 
 let parse st str r w =
