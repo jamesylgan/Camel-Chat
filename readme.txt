@@ -10,6 +10,7 @@ In order to connect with a Camel Chat server, we need to run
 	make HOST="[host IP]" PORT=9999 client
 in the command line.
 
-To test, you can run multiple clients on your own computer after hosting the server, and connecting to host IP: 127.0.0.1
+To test, you can run multiple clients in seperate terminals on your own computer after hosting the server, and connecting to host IP: 127.0.0.1
 
-The host IP to put in should be the IP of the computer running the server.
+You can connect multiple computers to a host server. 
+To do so, the host IP to put in should be the IP of the computer running the server.
