@@ -54,6 +54,8 @@ let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"
 let blue = "\027[34m"
+let purple = "\027[35m"
+let cyan = "\027[36m"
 
 let init_state () = {
   state = init_state ();
@@ -305,6 +307,10 @@ let send_msg st uid (chatid, msg) =
     | Some x -> begin
         match String.sub str 0 (String.index str ':' + 1) with
         | "red:" -> red ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "blue:"-> blue ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "green:"-> green ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "purple:"-> purple ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "cyan:"-> cyan ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
         | _ -> blue ^ msg
       end in
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
