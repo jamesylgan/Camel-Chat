@@ -24,6 +24,7 @@ let view_state4 = join_chat view_state5 1 "chatroom 2"
 let view_state6 = join_chat view_state5 1 "chatroom 1"
 let view_state7 = leave_chat view_state5 1 "chatroom 1"
 let view_state8 = leave_chat view_state5 1 "chatroom 2"
+let view_state9 = send_msg view_state5 1 (1, "hello")
 
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
@@ -66,9 +67,6 @@ let si = "s: i, 1:1, 2:10:group chat17:best chat ever!!!"
 let rj = {userid = 1; cmd = "j"; success = true; info = String "hey"; chatid = 3}
 let sj = "s: j, 1:1, 1:3, 3:hey"
 
-let rk = {userid = 1; cmd = "k"; success = true; info = SSTuple ("group", "Tim has left the chat"); chatid = 3}
-let sk = "s: k, 1:1, 1:3, 5:group, 21:Tim has left the chat"
-
 let tests_parse = [
   "a" >:: (fun _ -> assert_equal (input_of_string a) {userid = 0; cmd = Send_msg (15, "h,ey:!")});
   "b" >:: (fun _ -> assert_equal (input_of_string b) {userid = 10; cmd = Get_history 7});
@@ -89,7 +87,6 @@ let tests_parse = [
   "rh" >:: (fun _ -> assert_equal (string_of_response rh) sh);
   "ri" >:: (fun _ -> assert_equal (string_of_response ri) si);
   "rj" >:: (fun _ -> assert_equal (string_of_response rj) sj);
-  "rk" >:: (fun _ -> assert_equal (string_of_response rk) sk);
 ]
 
 let tests_server = [
@@ -113,7 +110,7 @@ let tests_server = [
                                        {userid = 1;
                                         cmd = "c";
                                         success = false;
-                                        info = String ("No online users");
+                                        info = String ("Error: No online users");
                                         chatid = -1});
                          state = st1;
                          chatid = 1
@@ -135,7 +132,7 @@ let tests_server = [
                                      {userid = 1;
                                       cmd = "g";
                                       success = false;
-                                      info = String ("Chat not found");
+                                      info = String ("Error: Chat not found");
                                       chatid = -1})
     }));
 
@@ -164,12 +161,23 @@ let tests_server = [
       {view_state5 with response =
          Some
            {Server.userid = 1; cmd = "h"; success = false;
-            info = Server.String "You can't leave a private chat!"; chatid = -1};
+            info = Server.String "Error: You can't leave a private chat!"; chatid = -1};
                         res_string = ""}
 
     ));
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+  "test send message" >:: (fun _ -> assert_equal view_state9 (
+    {Server.state =                                                                   {State.curr_conns = []; user_list = [(1, "groot")]; priv_chat_list = [];
+   pub_chat_list = [(1, []); (0, [])];
+   pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
+   chat_msg = [(1, [(1, "\027[32mgroot: \027[34mhello\027[0m")]); (0, [])]};
+ uid = 0; chatid = 1;
+ response =
+  Some
+   {Server.userid = 1; cmd = "a"; success = true; info = Server.Nil;
+    chatid = 1};
+ res_string = ""}
+    ));
 
   "rj" >:: (fun _ -> assert_equal 0 0);
 ]
