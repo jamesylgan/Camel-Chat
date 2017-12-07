@@ -58,8 +58,8 @@ let tests = [
   "gc4" >:: (fun _ -> assert_equal (get_chats_of_uid s1 4) [1;2;4]);
   "gc5" >:: (fun _ -> assert_equal (get_chats_of_uid s1 5) [2;3]);
   "gc6" >:: (fun _ -> assert_equal (get_chats_of_uid s1 6) [5]);
-  "gcx" >:: (fun _ -> assert_raises (UpdateError "User not found") (fun _ -> get_chats_of_uid s1 7));
-  "gce" >:: (fun _ -> assert_raises (UpdateError "User not found") (fun _ -> get_chats_of_uid emp 1));
+  "gcx" >:: (fun _ -> assert_raises (UpdateError "Error: User not found") (fun _ -> get_chats_of_uid s1 7));
+  "gce" >:: (fun _ -> assert_raises (UpdateError "Error: User not found") (fun _ -> get_chats_of_uid emp 1));
   "prc" >:: (fun _ -> assert_equal (get_priv_chats s1) ([(100, [1;2]); (1, [3;4])]));
   "puc" >:: (fun _ -> assert_equal (get_pub_chats s1) (["chat4"; "chat3"; "chat2"; "chat1"]));
   "gou" >:: (fun _ -> assert_equal (get_online_users s1) (List.rev ["u1";"u2";"u3";"u4";"u5"; "u6"]));
@@ -72,27 +72,27 @@ let tests = [
   "gux" >:: (fun _ -> assert_raises (UpdateError "Error") (fun _ -> get_users_of_chat s1 6));
   "gh0" >:: (fun _ -> assert_equal (get_history s1 100) h0);
   "gh2" >:: (fun _ -> assert_equal (get_history s1 2) (List.rev c2));
-  "ghx" >:: (fun _ -> assert_raises (UpdateError "Chat not found") (fun _ -> get_history s1 6));
+  "ghx" >:: (fun _ -> assert_raises (UpdateError "Error: Chat not found") (fun _ -> get_history s1 6));
   "am" >:: (fun _ -> assert_equal (add_msg s1 5 (2, "yo")) (s2));
   "gh'" >:: (fun _ -> assert_equal (get_history s2 2) h2);
   "au7" >:: (fun _ -> assert_equal (add_user s1 7 "u7") s3);
-  "au6" >:: (fun _ -> assert_raises (UpdateError "Username taken, please try again.") (fun _ -> add_user s1 8 "u6"));
+  "au6" >:: (fun _ -> assert_raises (UpdateError "Error: Username taken, please try again.") (fun _ -> add_user s1 8 "u6"));
   "apu" >:: (fun _ -> assert_equal (add_pub_chat s1 2 6 "chat5") s4);
-  "apux" >:: (fun _ -> assert_raises (UpdateError "Chat name taken, please try again.") (fun _ -> add_pub_chat s1 2 6 "chat4"));
+  "apux" >:: (fun _ -> assert_raises (UpdateError "Error: Chat name taken, please try again.") (fun _ -> add_pub_chat s1 2 6 "chat4"));
   "apr" >:: (fun _ -> assert_equal (add_priv_chat s1 2 3 6) s5);
   "aup" >:: (fun _ -> assert_equal (add_user_to_pub_chat s1 6 3) s6);
-  "aupx" >:: (fun _ -> assert_raises (UpdateError "Chat not found") (fun _ -> add_user_to_pub_chat s1 6 8));
+  "aupx" >:: (fun _ -> assert_raises (UpdateError "Error: Chat not found") (fun _ -> add_user_to_pub_chat s1 6 8));
   "gun" >:: (fun _ -> assert_equal (get_username s1 5) "u5");
-  "gunx" >:: (fun _ -> assert_raises (UpdateError "User not found") (fun _ -> get_username s1 8));
+  "gunx" >:: (fun _ -> assert_raises (UpdateError "Error: User not found") (fun _ -> get_username s1 8));
   "gui" >:: (fun _ -> assert_equal (get_uid s1 "u5") 5);
-  "guix" >:: (fun _ -> assert_raises (UpdateError "User not found") (fun _ -> get_uid s1 "5"));
+  "guix" >:: (fun _ -> assert_raises (UpdateError "Error: User not found") (fun _ -> get_uid s1 "5"));
   "gci" >:: (fun _ -> assert_equal (get_chatid s1 "chat3") 4);
-  "gcix" >:: (fun _ -> assert_raises (UpdateError "Chat not found") (fun _ -> get_chatid s1 "chat6"));
+  "gcix" >:: (fun _ -> assert_raises (UpdateError "Error: Chat not found") (fun _ -> get_chatid s1 "chat6"));
   "ru" >:: (fun _ -> assert_equal (remove_user s1 4) s7);
   "run" >:: (fun _ -> assert_equal (remove_user s1 10) s1);
   "rfc" >:: (fun _ -> assert_equal (remove_from_chat s7 3 2) s8);
   "rfcn" >:: (fun _ -> assert_equal (remove_from_chat s7 4 1) {s7 with priv_chat_list = List.rev s7.priv_chat_list});
-  "?" >:: (fun _ -> assert_raises (UpdateError "Chat not found") (fun _ -> remove_from_chat s1 3 20))
+  "?" >:: (fun _ -> assert_raises (UpdateError "Error: Chat not found") (fun _ -> remove_from_chat s1 3 20))
 ]
 
 

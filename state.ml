@@ -133,7 +133,7 @@ let is_username st chatname =
       if uname = chatname then acc else true || acc) false st.user_list
 
 let get_username st uid =
-  try List.assoc uid st.user_list with _ -> raise (UpdateError "User not found")
+  try List.assoc uid st.user_list with _ -> raise (UpdateError "Error: User not found")
 
 let get_uid st uname =
   try (
@@ -171,4 +171,4 @@ let remove_from_chat st uid chatid =
   if List.mem_assoc chatid st.pub_chat_list
   then {st with pub_chat_list = insert chatid users' st.pub_chat_list}
   else {st with priv_chat_list = insert chatid users' st.priv_chat_list})
-  with _ -> raise (UpdateError "Chat not found")
+  with _ -> raise (UpdateError "Error: Chat not found")
