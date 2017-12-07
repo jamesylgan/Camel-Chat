@@ -74,13 +74,15 @@ val add_user: state -> int -> string -> state
 val add_conn: state -> int -> (Async.Reader.t * Async.Writer.t) -> state
 
 (* [add_pub_chat st uid chatid chatname] updates st.pub_chat_list with [uid],
- * and updates st.chat_names with [chatname].
- * -raises: UpdateError "Chat name taken, please try again" when chat name
- *          already exists. *)
+ * and updates st.chat_names with [chatname]. Also updates st.chat_msg with
+ * (chatid, []).
+ * -raises: UpdateError "Chat name taken, please try again" when chat name or
+ *          username already exists. *)
 val add_pub_chat: state -> int -> int -> string -> state
 
 (* [add_priv_chat st uid1 uid2 chatid] updates st.priv_chat_list with [uid1] and
- * [uid2] in [chatid] and initializes st.chat_msg with (cid, []). *)
+ * [uid2] in [chatid] and initializes st.chat_msg with (cid, []). Also updates
+ * st.chat_msg with (chatid, []). *)
 val add_priv_chat: state -> int -> int -> int -> state
 
 (* [add_user_to_pub_chat st uid chatid] adds [uid] to the list of users of
