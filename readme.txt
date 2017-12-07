@@ -1,18 +1,24 @@
-Unzip the src.zip file in a directory of your choice then go to the directory in terminal. 
+Camel Chat
+Ruixin Ng (rn279), Xianyi Han (xh87), Joshua Sones (js2572), James Gan (jg893)
 
-Before running Camel Chat, you must enter the commands:
-	opam install async
-	opam install core
+Required external dependencies:
+	Async: opam install async
+	Core: opam install core
 
-In order to run Camel Chat, we need a computer hosting the server. We can do this by running
-	make PORT=9999 server
-in the command line of terminal.
+Building Camel Chat:
 
-In order to connect with a Camel Chat server, we need to run
-	make HOST="[host IP]" PORT=9999 client
-in the command line of terminal.
-
-To test, you can run multiple clients in seperate terminals on your own computer after hosting the server, and connecting to host IP: 127.0.0.1
-
-You can connect multiple computers to a host server. 
-To do so, the host IP to put in should be the IP of the computer running the server.
+1. Unzip the src.zip file in a directory of your choice and go to the directory
+in your terminal.
+2. Download the external dependencies if necessary.
+3. Run "make check" to ensure that you have the right versions of all
+dependencies.
+4. Start the Camel Chat server by running the following command in your terminal:
+	make PORT=<port number> server
+	(e.g. make PORT=9999 server)
+5. To run the client, run the command on your client computer:
+	make HOST="<host IP>" PORT=<IP port> client
+	(e.g. make HOST="127.0.0.1" PORT=9999 client)
+Note: The port specified in the make client command must be the same as the
+one used in the make server command, and the host IP argument should be the IP
+of the computer running the server.
+6. Enjoy chatting on Camel Chat!
