@@ -277,7 +277,7 @@ let leave_chat st uid chatname =
   with UpdateError err ->
     let res' = if is_username st.state chatname then
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
-          info = String "You can't leave a private chat!"; chatid = -1}
+          info = String "Error: You can't leave a private chat!"; chatid = -1}
       else
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
                      info = String err; chatid = -1} in
@@ -329,7 +329,7 @@ let rec create_private_chat st uid username =
   try let accepting_uid = get_uid st.state username in
     let sender_username = get_username st.state uid in
     if username = sender_username
-    then raise (UpdateError "You can't start a chat with yourself!")
+    then raise (UpdateError "Error: You can't start a chat with yourself!")
     else
       begin
         let new_chatid = st.chatid + 1 in

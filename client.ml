@@ -57,7 +57,8 @@ let check_chat s st =
   then let name = sub s 10 ((length s) - 10) |> String.lowercase_ascii in
     if (contains name ' ') then
       {st with print = [red ^ "Error: Please use a chat name without spaces!"]}
-    else if (List.mem_assoc name chats_low) then
+    else if (List.mem_assoc name chats_low
+             && not (Str.string_match pub_chat s 0)) then
       {st with print = [red ^ "Error: You are already in the chat!"]}
     else {st with print = []}
   else if (Str.string_match join_chat s 0)

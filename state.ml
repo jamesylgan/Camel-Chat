@@ -44,19 +44,19 @@ let get_chats_of_uid st uid =
       else get_cids id t acc in
   let check = List.rev_append (get_cids uid privs [])
       (get_cids uid pubs [] |> List.rev) in
-  if check = [] then raise (UpdateError "User not found") else check
+  if check = [] then raise (UpdateError "Error: User not found") else check
 
 let get_priv_chats st =
-  if st.priv_chat_list = [] then raise (UpdateError "No private chats")
+  if st.priv_chat_list = [] then raise (UpdateError "Error: No private chats")
   else st.priv_chat_list
 
 let get_online_users st =
   let x = List.rev_map (fun x -> snd x) st.user_list in
-  if x = [] then raise (UpdateError "No online users") else x
+  if x = [] then raise (UpdateError "Error: No online users") else x
 
 let get_pub_chats st =
   let x = List.rev_map (fun x -> fst x) st.pub_chat_names in
-  if x = [] then raise(UpdateError "No public chats") else x
+  if x = [] then raise(UpdateError "Error: No public chats") else x
 
 let get_users_of_chat st cid =
   try (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list)
@@ -76,7 +76,7 @@ let get_history st cid =
          | [] -> acc
          | h::t -> f t (h::acc) (count-1) in
      f msgs [] 10)
-  with _ -> raise (UpdateError "Chat not found")
+  with _ -> raise (UpdateError "Error: Chat not found")
 
 let add_msg st uid (cid, msg) =
   try
@@ -84,14 +84,14 @@ let add_msg st uid (cid, msg) =
      let msgs' = (uid, msg) :: msgs in
      let dict' = insert cid msgs' st.chat_msg in
      {st with chat_msg = dict'})
-  with _ -> raise (UpdateError "Chat not found")
+  with _ -> raise (UpdateError "Error: Chat not found")
 
 let add_user st uid uname =
   let open List in
   let user_list' = (uid, uname) ::
                    if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
                       || (List.mem_assoc (lc uname) (fst_lc st.pub_chat_names))
-                   then raise (UpdateError "Username taken, please try again.")
+                   then raise (UpdateError "Error: Username taken, please try again.")
                    else st.user_list in
   {st with user_list = user_list'}
 
@@ -108,7 +108,7 @@ let add_pub_chat st uid chatid chatname =
     (chatname, chatid) ::
     if List.mem_assoc (lc chatname) (fst_lc st.pub_chat_names)
        || List.mem_assoc (lc chatname) (fst_lc inv)
-    then raise (UpdateError "Chat name taken, please try again.")
+    then raise (UpdateError "Error: Chat name taken, please try again.")
     else st.pub_chat_names in
   {st with pub_chat_list = chat_lst'; pub_chat_names = chat_names';
            chat_msg = chat_msg'}
@@ -124,7 +124,7 @@ let add_user_to_pub_chat st uid cid =
   let user_lst' = uid :: user_lst in
   let chat_lst' = insert cid user_lst' st.pub_chat_list in
   {st with pub_chat_list = chat_lst'})
-  with _ -> raise (UpdateError "Chat not found")
+  with _ -> raise (UpdateError "Error: Chat not found")
 
 let is_username st chatname =
   List.fold_left (fun acc (uid, uname) ->
@@ -136,11 +136,11 @@ let get_username st uid =
 let get_uid st uname =
   try (
     let inv = Core.List.Assoc.inverse st.user_list in List.assoc (lc uname) (fst_lc inv))
-  with _ -> raise (UpdateError ("User not found"))
+  with _ -> raise (UpdateError ("Error: User not found"))
 
 let get_chatid st chatname =
   try List.assoc (lc chatname) (fst_lc st.pub_chat_names)
-  with _ -> raise (UpdateError ("Chat not found"))
+  with _ -> raise (UpdateError ("Error: Chat not found"))
 
 let get_chat_info st chatname =
   try
@@ -149,9 +149,9 @@ let get_chat_info st chatname =
                List.filter (fun (cname, cid) -> lc cname = lc chatname)
               st.pub_chat_names in
      match lst with
-     | [] -> raise (UpdateError ("Chat not found"))
+     | [] -> raise (UpdateError ("Error: Chat not found"))
      | h::t -> h )
-  with _ -> raise (UpdateError ("Chat not found"))
+  with _ -> raise (UpdateError ("Error: Chat not found"))
 
 let remove_user st uid =
   let conns' = List.remove_assoc uid st.curr_conns in
