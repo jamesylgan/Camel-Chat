@@ -1,6 +1,5 @@
 Before running Camel Chat, you must enter the commands:
 	opam install async
-	opam install core
 
 In order to run Camel Chat, we need a computer hosting the server. We can do this by running
 	make PORT=9999 server

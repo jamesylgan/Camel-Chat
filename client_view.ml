@@ -12,6 +12,40 @@ let cyan = "\027[36m"
 let blue = "\027[34m"
 let yellow = "\027[1;33m"
 
+let caml = "                 ,,__
+      ..  ..   / o._)   ___   ____                _
+     /--'/--\\  \\-'||   / _ \\ / ___|__ _ _ __ ___ | |
+    /        \\_/ / |  | | | | |   / _` | '_ ` _ \\| |
+  .'\\  \\__\\  __.'.'   | |_| | |__| (_| | | | | | | |
+    )\\ |  )\\ |         \\___/ \\____\\__,_|_| |_| |_|_|
+   // \\\\ // \\\\
+  ||_  \\\\|_  \\\\_    -- two humps are better than one
+  '--' '--'' '--'   -- we are groot
+source: https://github.com/avsm/vagrant-opam/blob/0ba2974e819390764725a0e18e188f455a14d6ac/bootstrap.sh\n"
+
+let help_message = " Get current chat history: #history
+  Create private chat with another user: #chatwith <username>
+  Create a public chat: #makechat <chat name>
+  Join a new chat: #join <chat name>
+  Leave a chat: #leave <chat name>
+  See a list of users currently online: #users
+  See a list of ongoing public chats: #pubchats
+  See a list of chats you are currently in: #mychats
+  See which chat you are currently viewing: #currchat
+  View a different chat that you are in: #goto <chat name>
+  Quit out of Camel Chat: #quit
+  ocaml_is_bae: #camelchat
+  FAQ for common issues: #faq
+  View this message again: #help\n"
+
+let faq_message = " 1. When someone starts a private chat with you,
+    you have to #goto [username] to view messages
+  2. You can never leave a private chat: make new friends :)
+  3. You start in a lobby chat, and you cannot leave the lobby
+  4. Your username cannot be the same as a public group name,
+    and you cannot make public groups with
+    names identical to existing usernames\n"
+
 let printc_string c s = print_string (c ^ s ^ b)
 let printc_endline c s = print_endline (c ^ s ^ b)
 
@@ -41,37 +75,6 @@ let rec send_msg w =
 (* [handle_stdin res w] is the helper function to check if [res] is a local
  * command rather than a message to be sent *)
 and handle_stdin res w =
-  let help_message = " Get current chat history: #history
- Create private chat with another user: #chatwith <username>
- Create a public chat: #makechat <chat name>
- Join a new chat: #join <chat name>
- Leave a chat: #leave <chat name>
- See a list of users currently online: #users
- See a list of ongoing public chats: #pubchats
- See a list of chats you are currently in: #mychats
- See which chat you are currently viewing: #currchat
- View a different chat that you are in: #goto <chat name>
- Quit out of Camel Chat: #quit
- ocaml_is_bae: #camelchat
- FAQ for common issues: #faq
- View this message again: #help\n" in
-  let faq_message = " 1. When someone starts a private chat with you,
-    you have to #goto [username] to view messages
- 2. You can never leave a private chat: make new friends :)
- 3. You start in a lobby chat, and you cannot leave the lobby
- 4. Your username cannot be the same as a public group name,
-    and you cannot make public groups with
-    names identical to existing usernames\n" in
-  let caml = "                 ,,__
-        ..  ..   / o._)   ___   ____                _
-       /--'/--\\  \\-'||   / _ \\ / ___|__ _ _ __ ___ | |
-      /        \\_/ / |  | | | | |   / _` | '_ ` _ \\| |
-    .'\\  \\__\\  __.'.'   | |_| | |__| (_| | | | | | | |
-      )\\ |  )\\ |         \\___/ \\____\\__,_|_| |_| |_|_|
-     // \\\\ // \\\\
-    ||_  \\\\|_  \\\\_    -- two humps are better than one
-    '--' '--'' '--'   -- we are groot
-source: https://github.com/avsm/vagrant-opam/blob/0ba2974e819390764725a0e18e188f455a14d6ac/bootstrap.sh\n" in
   match res with
   | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
   | "#mychats" ->
@@ -103,7 +106,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  let error = Str.regexp ("\027\[31mError:\\(.+\\)") in 
+  let error = Str.regexp ("\027\[31mError:\\(.+\\)") in
   if (not (Str.string_match error (List.hd (get_print !st)) 0))
   then Writer.write_line w (parse_send "#history" !st)
 
@@ -175,6 +178,7 @@ let main () =
                  ^ green ^ " C" ^ cyan ^ "a" ^ blue ^ "m" ^ purp ^ "e" ^ red
                  ^ "l" ^ yellow ^ " C" ^ green ^ "h" ^ cyan ^ "a" ^ blue
                  ^ "t" ^ b);
+  printc_string yellow (caml);
   printc_string red "Enter a username to begin: \n";
   printc_string red "> ";
   Command.async

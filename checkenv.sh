@@ -26,27 +26,11 @@ else
   environment=bad
 fi
 
-CORE_VERSION="$(opam info core -f installed-version 2>&1)"
-if [[ "$CORE_VERSION" =~ "0.9.1" && "$CORE_VERSION" =~ "4.05.0" ]]; then
-  echo "Core version 0.9.1 is active.  Good."
-else
-  echo "Core version 0.9.1 is NOT active.  This is bad."
-  environment=bad
-fi
-
 ASYNC_VERSION="$(opam info async -f installed-version 2>&1)"
 if [[ "$ASYNC_VERSION" =~ "0.9.0" && "$ASYNC_VERSION" =~ "4.05.0" ]]; then
   echo "Async version 0.9.0 is active.  Good."
 else
   echo "Async version 0.9.0 is NOT active.  This is bad."
-  environment=bad
-fi
-
-EMOJI_VERSION="$(opam info Emoji -f installed-version 2>&1)"
-if [[ "$EMOJI_VERSION" =~ "1.1.0" && "$EMOJI_VERSION" =~ "4.05.0" ]]; then
-  echo "Emoji version 1.1.0 is active.  Good."
-else
-  echo "Emoji version 1.1.0 is NOT active.  This is bad."
   environment=bad
 fi
 
