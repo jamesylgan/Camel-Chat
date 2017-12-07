@@ -36,6 +36,9 @@ let help_message = " Get current chat history: #history
   Quit out of Camel Chat: #quit
   ocaml_is_bae: #camelchat
   FAQ for common issues: #faq
+  Color your messages: put red:, blue:, green:, purple:, cyan:, or yellow:
+    at the start of your message! e.g. purple:Hello! becomes " ^ purp
+                   ^ "Hello!" ^ red ^"
   View this message again: #help\n"
 
 let faq_message = " 1. When someone starts a private chat with you,
@@ -106,7 +109,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  let error = Str.regexp ("\027\[31mError:\\(.+\\)") in
+  let error = Str.regexp (red ^ "Error:\\(.+\\)") in
   if (not (Str.string_match error (List.hd (get_print !st)) 0))
   then Writer.write_line w (parse_send "#history" !st)
 
