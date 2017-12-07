@@ -25,6 +25,3 @@ check:
 
 clean:
 	ocamlbuild -clean
-
-zip:
-	zip a3src.zip *.ml*
