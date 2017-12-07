@@ -34,6 +34,10 @@ let st3 =
 let view_state11 = {view_state1 with state = st3}
 let view_state12 = Server.get_public_chat view_state1 1
 let view_state13 = Server.create_private_chat view_state11 1 "notgroot"
+let view_state26 = join_chat view_state5 1 "chATRoom 1"
+let view_state27 = leave_chat view_state5 1 "CHATroom 1"
+let view_state23 = Server.create_private_chat view_state11 1 "noTGRoot"
+let view_state21 = create_pub_chat view_state0 1 "chatROOM 1"
 
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
@@ -215,6 +219,52 @@ let tests_server = [
      {Server.userid = 1; cmd = "b"; success = true;
       info = Server.ISList [(1, "\027[32mgroot: \027[34mhello\027[0m")];
       chatid = 1}}));
+
+  "test capitalization: create private chat" >:: (fun _ ->
+      assert_equal view_state23 ({Server.state =                                                                   {State.curr_conns = []; user_list = [(1, "groot"); (2, "notgroot")];
+      priv_chat_list = [(2, [1; 2])]; pub_chat_list = [(1, []); (0, [])];
+      pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
+      chat_msg = [(2, []); (1, []); (0, [])]};
+      uid = 0; chatid = 2;
+    response =
+      Some
+        {Server.userid = 1; cmd = "d"; success = true;
+        info = Server.String "notgroot"; chatid = 2};
+    res_string = ""}
+  ));
+
+  "test capitalization: join chat success" >:: (fun _ ->
+      assert_equal view_state26 ({view_state5 with
+                                  response = (Some
+                                     {userid = 1;
+                                      cmd = "g";
+                                      success = true;
+                                      info = String ("chatroom 1");
+                                      chatid = 1});
+                       state = {st2 with pub_chat_list
+                                         = [(1, [1]); (0, [])]};
+                       chatid = 1
+    }));
+
+  "test capitalization: leave chat success" >:: (fun _ ->
+      assert_equal view_state27 (
+      {view_state5 with response =
+         Some
+           {Server.userid = 1; cmd = "h"; success = true;
+            info = Server.String "CHATroom 1"; chatid = 1};
+                        res_string = ""}
+
+    ));
+
+  "test capitalization: create pub chat" >:: (fun _ ->
+      assert_equal view_state21 ({
+      view_state0 with response = (Some {userid = 1; cmd = "e";
+                                         success = true;
+                                         info = String ("chatROOM 1");
+                                 chatid = 1});
+               state = st1;
+               chatid = 1
+    }));
 ]
 
 let suite = "Server test suite" >::: tests_parse @ tests_server
