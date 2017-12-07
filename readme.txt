@@ -18,7 +18,9 @@ dependencies.
 5. To run the client, run the command on your client computer:
 	make HOST="<host IP>" PORT=<IP port> client
 	(e.g. make HOST="127.0.0.1" PORT=9999 client)
+6. Enjoy chatting on Camel Chat!
+
+
 Note: The port specified in the make client command must be the same as the
 one used in the make server command, and the host IP argument should be the IP
 of the computer running the server.
-6. Enjoy chatting on Camel Chat!
