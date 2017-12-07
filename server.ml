@@ -56,6 +56,7 @@ let green = "\027[32m"
 let blue = "\027[34m"
 let purple = "\027[35m"
 let cyan = "\027[36m"
+let yellow = "\027[1;33m"
 
 let init_state () = {
   state = init_state ();
@@ -311,6 +312,7 @@ let send_msg st uid (chatid, msg) =
         | "green:"-> green ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
         | "purple:"-> purple ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
         | "cyan:"-> cyan ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "yellow:"-> yellow ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
         | _ -> blue ^ msg
       end in
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
