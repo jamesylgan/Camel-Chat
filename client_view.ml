@@ -197,6 +197,3 @@ let main () =
   |> Command.run
 
 let () = main ()
-  (*ignore (let open Core in return (Sys.command("clear"))
-          >>= fun _ ->
-          return (main ()))*)
