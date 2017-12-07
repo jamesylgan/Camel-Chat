@@ -31,10 +31,12 @@ let s3 = {s1 with user_list = (7, "u7") :: s1.user_list}
 let h2 = [(1, "hi"); (3, "hey"); (4, "sup"); (5, "nm"); (1, "u?"); (3, "same."); (5, "yo")]
 
 let s4 = {s1 with pub_chat_list = (6, [2]):: s1.pub_chat_list;
-                  pub_chat_names = ("chat5", 6) :: s1.pub_chat_names
+                  pub_chat_names = ("chat5", 6) :: s1.pub_chat_names;
+                  chat_msg = (6, []) :: s1.chat_msg
          }
-
-let s5 = {s1 with priv_chat_list = (6, [2;3]) :: s1.priv_chat_list}
+(* "apr" >:: (fun _ -> assert_equal (add_priv_chat s1 2 3 6) s5); *)
+let s5 = {s1 with priv_chat_list = (6, [2;3]) :: s1.priv_chat_list;
+                  chat_msg = (6, []):: s1.chat_msg}
 
 let s6 = {s1 with pub_chat_list = [(3, [6;3;5]); (2, [1;3;4;5]); (4, [4]); (5, [6])]}
 
