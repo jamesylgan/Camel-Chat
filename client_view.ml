@@ -58,7 +58,18 @@ See a list of chats you are currently in: #mychats
 See which chat you are currently viewing: #currchat
 View a different chat that you are in: #goto <chat name>
 Quit out of Camel Chat: #quit
+ocaml_is_bae: #camelchat
 View this message again: #help\n"); send_msg w
+  | "#camelchat" -> printc_string yellow ("                 ,,__
+        ..  ..   / o._)   ___   ____                _
+       /--'/--\\  \\-'||   / _ \\ / ___|__ _ _ __ ___ | |
+      /        \\_/ / |  | | | | |   / _` | '_ ` _ \\| |
+    .'\\  \\__\\  __.'.'   | |_| | |__| (_| | | | | | | |
+      )\\ |  )\\ |         \\___/ \\____\\__,_|_| |_| |_|_|
+     // \\\\ // \\\\
+    ||_  \\\\|_  \\\\_    -- two humps are better than one
+    '--' '--'' '--'   -- we are groot
+source: https://github.com/avsm/vagrant-opam/blob/0ba2974e819390764725a0e18e188f455a14d6ac/bootstrap.sh\n"); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0
