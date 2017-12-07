@@ -37,7 +37,6 @@ let view_state13 = Server.create_private_chat view_state11 1 "notgroot"
 let view_state26 = join_chat view_state5 1 "chATRoom 1"
 let view_state27 = leave_chat view_state5 1 "CHATroom 1"
 let view_state23 = Server.create_private_chat view_state11 1 "noTGRoot"
-let view_state21 = create_pub_chat view_state0 1 "chatROOM 1"
 
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
@@ -255,16 +254,6 @@ let tests_server = [
                         res_string = ""}
 
     ));
-
-  "test capitalization: create pub chat" >:: (fun _ ->
-      assert_equal view_state21 ({
-      view_state0 with response = (Some {userid = 1; cmd = "e";
-                                         success = true;
-                                         info = String ("chatROOM 1");
-                                 chatid = 1});
-               state = st1;
-               chatid = 1
-    }));
 ]
 
 let suite = "Server test suite" >::: tests_parse @ tests_server
