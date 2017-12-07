@@ -66,6 +66,9 @@ let si = "s: i, 1:1, 2:10:group chat17:best chat ever!!!"
 let rj = {userid = 1; cmd = "j"; success = true; info = String "hey"; chatid = 3}
 let sj = "s: j, 1:1, 1:3, 3:hey"
 
+let rk = {userid = 1; cmd = "k"; success = true; info = SSTuple ("group", "Tim has left the chat"); chatid = 3}
+let sk = "s: k, 1:1, 1:3, 5:group, 21:Tim has left the chat"
+
 let tests_parse = [
   "a" >:: (fun _ -> assert_equal (input_of_string a) {userid = 0; cmd = Send_msg (15, "h,ey:!")});
   "b" >:: (fun _ -> assert_equal (input_of_string b) {userid = 10; cmd = Get_history 7});
@@ -86,6 +89,7 @@ let tests_parse = [
   "rh" >:: (fun _ -> assert_equal (string_of_response rh) sh);
   "ri" >:: (fun _ -> assert_equal (string_of_response ri) si);
   "rj" >:: (fun _ -> assert_equal (string_of_response rj) sj);
+  "rk" >:: (fun _ -> assert_equal (string_of_response rk) sk);
 ]
 
 let tests_server = [

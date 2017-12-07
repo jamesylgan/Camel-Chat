@@ -1,5 +1,5 @@
 
-(* [state] is the current state of the server. The server maintains a 4
+(* [state] is the current state of the server. The server maintains multiple
  * dictionaries as association lists:
    - curr_conns maps uid to the (Reader, Writer) object of the connection
    - user_list maps userid to usernames

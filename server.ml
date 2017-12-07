@@ -277,7 +277,7 @@ let leave_chat st uid chatname =
   with UpdateError err ->
     let res' = if is_username st.state chatname then
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
-          info = String "You can't leave a private chat!"; chatid = -1}
+          info = String "Error: You can't leave a private chat!"; chatid = -1}
       else
     Some {userid = uid; cmd = make_cmd `LEAVE_CHAT; success = false;
                      info = String err; chatid = -1} in
@@ -336,13 +336,14 @@ let res' = Some {userid = uid; cmd = make_cmd `GET_HISTORY; success = false;
 let rec create_private_chat st uid username =
   try let accepting_uid = get_uid st.state username in
     let sender_username = get_username st.state uid in
-    if username = sender_username
-    then raise (UpdateError "You can't start a chat with yourself!")
+    if String.lowercase_ascii username = String.lowercase_ascii sender_username
+    then raise (UpdateError "Error: You can't start a chat with yourself!")
     else
       begin
+        let corrected_username = get_username st.state accepting_uid in
         let new_chatid = st.chatid + 1 in
-        print_endline ("Creating priv chat with " ^ username ^ " of chatid " ^
-                       string_of_int new_chatid);
+        print_endline ("Creating priv chat with " ^ corrected_username
+                       ^ " of chatid " ^ string_of_int new_chatid);
         let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
         let view_state1 = {st with state = state1} in
         let view_state2 =
@@ -350,7 +351,7 @@ let rec create_private_chat st uid username =
           (new_chatid, (" has started a chat with you."))
           (`NOTIF sender_username) in
         let res' = Some {userid = uid; cmd = make_cmd `CREATE_PRIV_CHAT;
-                         success = true; info = String (username);
+                         success = true; info = String (corrected_username);
                          chatid = new_chatid}
         in {view_state2 with response = res'; chatid = new_chatid}
       end
