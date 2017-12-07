@@ -299,9 +299,17 @@ let create_user st username r w =
 
 (* msg stored includes username *)
 let send_msg st uid (chatid, msg) =
+  let color_message str =
+    match String.index_opt str ':' with
+    | None -> blue ^ str
+    | Some x -> begin
+        match String.sub str 0 (String.index str ':' + 1) with
+        | "red:" -> red ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | _ -> blue ^ msg
+      end in
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);
   try let username = get_username st.state uid in
-    let new_msg = green ^ username ^ blue ^ ": " ^ msg ^ b in
+    let new_msg = green ^ username ^ ": " ^ (color_message msg) ^ b in
     let state' = add_msg st.state uid (chatid, new_msg) in
     print_string ("added msg " ^ new_msg ^ "\n");
     let view_state = {st with state = state'} in
