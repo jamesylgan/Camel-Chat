@@ -130,6 +130,9 @@ let rec open_file addr r w  =
 
 let x = ref 0
 
+let a = (after (Core.sec 5.)) >>= (fun () -> print_endline ("fst"); return ())
+
+let b = (after (Core.sec 3.)) >>= fun () -> x := !x + 1; print_endline ("snd"); return()
 
 let run ~host ~port () : unit Async_extra.Import.Deferred.t =
   (after (Core.sec 5.)) >>= (fun () -> print_endline ("fst"); return ())
