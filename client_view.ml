@@ -103,7 +103,8 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  if (get_print !st = [])
+  let error = Str.regexp ("\027\[31mError:\\(.+\\)") in (*TODO: regex not working!*)
+  if (not (Str.string_match error (List.hd (get_print !st)) 0))
   then Writer.write_line w (parse_send "#history" !st)
 
 (* [create_user r w] is sends the username from standard input to the server.
