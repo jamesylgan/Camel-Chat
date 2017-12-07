@@ -1,14 +1,27 @@
 client1
+
 #users
+
 #chatwith client2
+
 Yo waz up?
+
 Fine but gotta go soon!
+
 #goto lobby
+
 #makechat cs 3110
+
 #mychats
+
 Same man! But still need to go soon
+
 #leave cs3110
+
 #goto client2
+
 #goto lobby
+
 Hope everyone's having a good day!
+
 #quit

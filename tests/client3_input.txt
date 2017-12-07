@@ -1,0 +1,53 @@
+JohnCeno
+
+#pubchats
+
+#currchat
+
+#join lobby
+
+#leave lObBY
+
+#chatwith johnCeno
+
+#join CS3110
+
+#currchat
+
+Fine professor!
+
+But i think we should make a cooler name for our pub chat
+
+#leave cs3110
+
+#join 3110:D
+
+Fantastic name professor :D
+
+#mychats
+
+#join clarkson
+
+#leave clarkson
+
+Hello again professor!
+Wanna ask a few questions
+About a3 specifically
+Why don't we use black red tree instead of 23tree
+???
+
+#goto lobby
+
+#history
+
+Has anyone seen Prof. Clarkson here?
+
+#history
+
+#goto clarkson
+
+Oh okey
+
+#camelchat
+
+#quit

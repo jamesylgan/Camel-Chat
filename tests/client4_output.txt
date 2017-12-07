@@ -1,0 +1,77 @@
+Starting Caml Chat
+Enter a username to begin:
+>
+
+Welcome to the Lobby!
+Type #help for instructions!
+
+Entering chat CS3110...
+
+JohnCeno has joined the chat
+
+JohnCeno: Fine professor!
+
+JohnCeno: But i think we should make a cooler name for our pub chat
+
+Entering chat 3110:D
+
+3110:D, cs3110, Lobby
+
+Returning to Lobby...
+
+Entering chat 3110:D...
+
+JohnCeno has joined the chat
+
+JohnCeno: Fantastic name professor :D
+
+JohnCeno has started a chat with you
+
+Entering chat JohnCeno...
+JohnCeno: Hello again professor!
+JohnCeno: Wanna ask a few questions
+JohnCeno: About a3 specifically
+JohnCeno: Why don't we use black red tree instead of 23tree
+JohnCeno: ???
+
+JohnCeno: Oh, okey
+
+Entering chat Lobby...
+JohnCeno: Has anyone seen Prof. Clarkson here?
+
+JohnCeno: Has anyone seen Prof. Clarkson here?
+
+Get current chat history: #history
+ Create private chat with another user: #chatwith <username>
+ Create a public chat: #makechat <chat name>
+ Join a new chat: #join <chat name>
+ Leave a chat: #leave <chat name>
+ See a list of users currently online: #users
+ See a list of ongoing public chats: #pubchats
+ See a list of chats you are currently in: #mychats
+ See which chat you are currently viewing: #currchat
+ View a different chat that you are in: #goto <chat name>
+ Quit out of Camel Chat: #quit
+ ocaml_is_bae: #camelchat
+ FAQ for common issues: #faq
+ View this message again: #help
+
+Error: Chat not found
+
+Error: Please use a chat name without spaces!
+
+Error: You are already in the chat!
+
+Error: You are already in the chat!
+
+Error: You are not in chat cs2800
+
+Error: You are already in chat cs 2800
+
+1. When someone starts a private chat with you,
+   you have to #goto [username] to view messages
+ 2. You can never leave a private chat: make new friends :)
+ 3. You start in a lobby chat, and you cannot leave the lobby
+ 4. Your username cannot be the same as a public group name,
+   and you cannot make public groups with
+   names identical to existing usernames

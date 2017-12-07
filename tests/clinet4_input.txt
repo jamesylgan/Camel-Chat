@@ -1,0 +1,42 @@
+Clarkson
+
+#makechat CS3110
+
+Hello Mr. Ceno! How are you today :) ?
+
+Sure why not
+
+#makechat 3110:D
+
+#mychats
+
+#leave cs3110
+
+#goto 3110:D
+
+Thanks i know :D
+
+#goto johnceno
+
+Not gonna answer that Ceno!
+Go ask a TA for that :)
+
+#goto lobby
+
+#history
+
+#help
+
+#join cs2800
+
+#makechat cs 2800
+
+#join lobby
+
+#join johnceno
+
+#goto cs2800
+
+#goto cs 2800
+
+#faq

@@ -1,12 +1,23 @@
 client2
+
 #mychats
+
 #goto client1
+
 Good how are you?
+
 Okey cya then
+
 #pubchats
+
 #join cs3110
+
 #mychats
+
 Hi client1, good to see you again!
+
 #goto lobby
+
 #history
+
 #quit

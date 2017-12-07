@@ -1,22 +1,35 @@
 Starting Caml Chat
 Enter a username to begin:
 >
+
 Welcome to the Lobby!
 Type #help for instructions!
+
 client1
 client2
+
 Entering chat client2...
+
 client2: Good how are you?
+
 client2: Okey cya then
+
 Entering chat lobby...
+
 Entering chat cs3110...
+
 cs3110, client2, Lobby
+
 client2 has joined the chat
+
 client2: Hi client1, good to see you again!
+
 Returning to Lobby...
+
 Entering chat client2...
 client1: Yo waz up?
 client2: Good how are you?
 client1: Fine but gotta go soon!
 client2: Okey cya then
+
 Entering chat lobby...
