@@ -1,6 +1,23 @@
 open OUnit2
 open Server
+open State
 
+let view_state0 = Server.init_state ()
+let st0 = State.init_state ()
+
+(*let new_uid = st0.uid + 1 in
+  let state1 = add_user st0.state new_uid "bob" in
+  let state2 = add_user_to_pub_chat state1 new_uid 0 in
+  let st1 = {st0 with state = state2; uid = st0.uid + 1}*)
+let view_state1 = create_pub_chat view_state0 1 "chatroom 1"
+
+let st1 =
+  let chatid = view_state0.chatid + 1 in
+  let uid = 1 in
+  {State.curr_conns = []; user_list = []; priv_chat_list = [];
+   pub_chat_list = [(chatid, [uid]); (0, [])];
+   pub_chat_names = [("chatroom 1", chatid); ("Lobby", 0)];
+   chat_msg = [(chatid, []); (0, [])]}
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
 let b = "b, 2:10, 1:7"
@@ -64,7 +81,34 @@ let tests_parse = [
   "rj" >:: (fun _ -> assert_equal (string_of_response rj) sj);
 ]
 
-let tests_server = []
+let tests_server = [
+  "test init_state (skips state test)" >:: (fun _ -> assert_equal view_state0 ({
+      state = st0;
+      uid = 0;
+      chatid = 0;
+      response = None;
+      res_string = ""
+    }));
+  "test create pub chat" >:: (fun _ -> assert_equal view_state1 ({
+      view_state0 with response = (Some {userid = 1; cmd = "e";
+                                 success = true; info = String ("chatroom 1");
+                                 chatid = 1});
+               state = st1;
+               chatid = 1
+    }));
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+
+  "rj" >:: (fun _ -> assert_equal 0 0);
+]
 
 let suite = "Server test suite" >::: tests_parse @ tests_server
 
