@@ -41,7 +41,7 @@ let rec send_msg w =
 (* [handle_stdin res w] is the helper function to check if [res] is a local
  * command rather than a message to be sent *)
 and handle_stdin res w =
-  let help_message = "Get current chat history: #history
+  let help_message = " Get current chat history: #history
  Create private chat with another user: #chatwith <username>
  Create a public chat: #makechat <chat name>
  Join a new chat: #join <chat name>
@@ -104,8 +104,7 @@ and handle_change_chat s w =
   st := change_chat chatname !st;
   print ();
   if (get_print !st = [])
-  then (print_endline (red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..." ^ b);
-        Writer.write_line w (parse_send "#history" !st))
+  then Writer.write_line w (parse_send "#history" !st)
 
 (* [create_user r w] is sends the username from standard input to the server.
  * Checks if the username is a valid username. *)
@@ -119,11 +118,11 @@ let rec create_user r w =
       end in
     if is_some
     then
-      (print_string (red ^ "Error invalid characters in username\n > ");
+      (print_string (red ^ "Error: Invalid characters in username\n> ");
        create_user r w)
     else if String.length line = 0
     then
-      (print_string (red ^ "Error empty username input\n > ");
+      (print_string (red ^ "Error: Empty username input\n> ");
        create_user r w)
     else (Writer.write_line w (parse_create_user line);
           read_create_username r w) in
