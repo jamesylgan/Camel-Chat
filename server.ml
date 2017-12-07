@@ -50,6 +50,7 @@ let make_cmd = function
   | `RECEIVE_MSG -> "j"
   | `CHAT_NOTIF -> "k"
 
+(* Pigment values for stirng coloring. *)
 let b = "\027[0m"
 let red = "\027[31m"
 let green = "\027[32m"

@@ -13,6 +13,7 @@ let init_state () =
     print = [];
   }
 
+(* Pigment values for string coloring. *)
 let b = "\027[0m"
 let red = "\027[31m"
 let blue = "\027[34m"
@@ -20,6 +21,7 @@ let green = "\027[32m"
 let purp = "\027[35m"
 let cyan = "\027[36m"
 
+(* A helper function that colors a list of strings in the same color. *)
 let color c lst = List.map (fun x -> c ^ x) lst
 
 
@@ -115,7 +117,7 @@ let parse_send s st =
     end
 
 (* A helper function that checks whether a chat name is in a given list in
- * case-insensitive manner. *)
+ * a case-insensitive manner. *)
 let rec check_lower lst cname acc =
   match lst with
   | [] -> List.rev acc
@@ -227,8 +229,7 @@ let parse_receive s st =
               print = [green ^ chat_n ^ red ^ msg];
             }
         end
-(* d, e, g all give the same thing, assuming that the [curr_chatid]
-  is automaticially swtiched to that of any newly created chat. *)
+        (* Response strings d, e, g all return the same update. *)
         | same -> {
             userid = st.userid;
             curr_chat = (info, chatid);
