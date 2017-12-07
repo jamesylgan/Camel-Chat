@@ -41,26 +41,28 @@ let rec send_msg w =
 (* [handle_stdin res w] is the helper function to check if [res] is a local
  * command rather than a message to be sent *)
 and handle_stdin res w =
-  match res with
-  | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
-  | "#mychats" ->
-    let chats = get_chats !st in
-    printc_endline purp (String.concat ", " chats); send_msg w
-  | "#quit" -> exit 0
-  | "#help" -> printc_string red ("Get current chat history: #history
-Create private chat with another user: #chatwith <username>
-Create a public chat: #makechat <chat name>
-Join a new chat: #join <chat name>
-Leave a chat: #leave <chat name>
-See a list of users currently online: #users
-See a list of ongoing public chats: #pubchats
-See a list of chats you are currently in: #mychats
-See which chat you are currently viewing: #currchat
-View a different chat that you are in: #goto <chat name>
-Quit out of Camel Chat: #quit
-ocaml_is_bae: #camelchat
-View this message again: #help\n"); send_msg w
-  | "#camelchat" -> printc_string yellow ("                 ,,__
+  let help_message = "Get current chat history: #history
+ Create private chat with another user: #chatwith <username>
+ Create a public chat: #makechat <chat name>
+ Join a new chat: #join <chat name>
+ Leave a chat: #leave <chat name>
+ See a list of users currently online: #users
+ See a list of ongoing public chats: #pubchats
+ See a list of chats you are currently in: #mychats
+ See which chat you are currently viewing: #currchat
+ View a different chat that you are in: #goto <chat name>
+ Quit out of Camel Chat: #quit
+ ocaml_is_bae: #camelchat
+ FAQ for common issues: #faq
+ View this message again: #help\n" in
+  let faq_message = " 1. When someone starts a private chat with you,
+    you have to #goto [username] to view messages
+ 2. You can never leave a private chat: make new friends :)
+ 3. You start in a lobby chat, and you cannot leave the lobby
+ 4. Your username cannot be the same as a public group name,
+    and you cannot make public groups with
+    names identical to existing usernames\n" in
+  let caml = "                 ,,__
         ..  ..   / o._)   ___   ____                _
        /--'/--\\  \\-'||   / _ \\ / ___|__ _ _ __ ___ | |
       /        \\_/ / |  | | | | |   / _` | '_ ` _ \\| |
@@ -69,7 +71,17 @@ View this message again: #help\n"); send_msg w
      // \\\\ // \\\\
     ||_  \\\\|_  \\\\_    -- two humps are better than one
     '--' '--'' '--'   -- we are groot
-source: https://github.com/avsm/vagrant-opam/blob/0ba2974e819390764725a0e18e188f455a14d6ac/bootstrap.sh\n"); send_msg w
+source: https://github.com/avsm/vagrant-opam/blob/0ba2974e819390764725a0e18e188f455a14d6ac/bootstrap.sh\n" in
+  match res with
+  | "#currchat" -> printc_endline purp (get_curr_chat !st); send_msg w
+  | "#mychats" ->
+    let chats = get_chats !st in
+    printc_endline purp (String.concat ", " chats); send_msg w
+  | "#quit" -> exit 0
+  | "#help" -> printc_string red (help_message); send_msg w
+  | "#faq" -> printc_string red (faq_message);
+    send_msg w
+  | "#camelchat" -> printc_string yellow (caml); send_msg w
   | res ->
     let change_chat = Str.regexp "#goto \\(.+\\)" in
     if Str.string_match change_chat res 0
