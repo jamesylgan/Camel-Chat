@@ -1,7 +1,3 @@
-test:
-	ocamlbuild -use-ocamlfind try_server.byte && ./try_server.byte -port ${PORT}
-#eg make PORT=9999 test
-
 server:
 	ocamlbuild -use-ocamlfind server_view.byte && ./server_view.byte -port ${PORT}
 #eg make PORT=9999 server
@@ -10,9 +6,10 @@ client:
 	ocamlbuild -use-ocamlfind client_view.byte && ./client_view.byte -host ${HOST} -port ${PORT}
 #eg make HOST="127.0.0.1" PORT=9999 client
 
-test_conn:
-	ocamlbuild -use-ocamlfind test_conn.byte && ./test_conn.byte -host ${HOST} -port ${PORT}
-#eg make HOST="127.0.0.1" PORT=9999 INPUT="test.txt" OUTPUT="out.txt" test_conn
+test:
+	ocamlbuild -use-ocamlfind test_state.byte && ./test_state.byte
+	ocamlbuild -use-ocamlfind test_client.byte && ./test_client.byte
+	ocamlbuild -use-ocamlfind test_server.byte && ./test_server.byte
 
 test_state:
 	ocamlbuild -use-ocamlfind test_state.byte && ./test_state.byte
