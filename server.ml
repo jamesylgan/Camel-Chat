@@ -328,7 +328,7 @@ let res' = Some {userid = uid; cmd = make_cmd `GET_HISTORY; success = false;
 let rec create_private_chat st uid username =
   try let accepting_uid = get_uid st.state username in
     let sender_username = get_username st.state uid in
-    if username = sender_username
+    if String.lowercase_ascii username = String.lowercase_ascii sender_username
     then raise (UpdateError "Error: You can't start a chat with yourself!")
     else
       begin
