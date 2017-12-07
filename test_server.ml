@@ -25,6 +25,15 @@ let view_state6 = join_chat view_state5 1 "chatroom 1"
 let view_state7 = leave_chat view_state5 1 "chatroom 1"
 let view_state8 = leave_chat view_state5 1 "chatroom 2"
 let view_state9 = send_msg view_state5 1 (1, "hello")
+let view_state10 = Server.get_history view_state9 1 1
+let st3 =
+  {State.curr_conns = []; user_list = [(1,"groot"); (2, "notgroot")]; priv_chat_list = [];
+   pub_chat_list = [(1, []); (0, [])];
+   pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
+   chat_msg = [(1, []); (0, [])]}
+let view_state11 = {view_state1 with state = st3}
+let view_state12 = Server.get_public_chat view_state1 1
+let view_state13 = Server.create_private_chat view_state11 1 "notgroot"
 
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
@@ -166,7 +175,7 @@ let tests_server = [
 
     ));
 
-  "test send message" >:: (fun _ -> assert_equal view_state9 (
+  "test send message success" >:: (fun _ -> assert_equal view_state9 (
     {Server.state =                                                                   {State.curr_conns = []; user_list = [(1, "groot")]; priv_chat_list = [];
    pub_chat_list = [(1, []); (0, [])];
    pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
@@ -179,7 +188,33 @@ let tests_server = [
  res_string = ""}
     ));
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+  "test create private chat" >:: (fun _ -> assert_equal view_state13 (
+    {Server.state =                                                                   {State.curr_conns = []; user_list = [(1, "groot"); (2, "notgroot")];
+      priv_chat_list = [(2, [1; 2])]; pub_chat_list = [(1, []); (0, [])];
+      pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
+      chat_msg = [(2, []); (1, []); (0, [])]};
+      uid = 0; chatid = 2;
+    response =
+      Some
+        {Server.userid = 1; cmd = "d"; success = true;
+        info = Server.String "notgroot"; chatid = 2};
+    res_string = ""}
+    ));
+
+  "test get public chat" >:: (fun _ -> assert_equal view_state12 (
+      {view_state1 with response =
+        Some
+       {Server.userid = 1; cmd = "i"; success = true;
+        info = Server.SList ["Lobby"; "chatroom 1"]; chatid = -1}}
+    ));
+
+  "test get history" >:: (fun _ -> assert_equal view_state10 (
+    {view_state9 with
+   response =
+    Some
+     {Server.userid = 1; cmd = "b"; success = true;
+      info = Server.ISList [(1, "\027[32mgroot: \027[34mhello\027[0m")];
+      chatid = 1}}));
 ]
 
 let suite = "Server test suite" >::: tests_parse @ tests_server
