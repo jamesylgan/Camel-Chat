@@ -41,7 +41,7 @@ let rec send_msg w =
 (* [handle_stdin res w] is the helper function to check if [res] is a local
  * command rather than a message to be sent *)
 and handle_stdin res w =
-  let help_message = "Get current chat history: #history
+  let help_message = " Get current chat history: #history
  Create private chat with another user: #chatwith <username>
  Create a public chat: #makechat <chat name>
  Join a new chat: #join <chat name>
