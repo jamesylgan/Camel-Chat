@@ -332,9 +332,10 @@ let rec create_private_chat st uid username =
     then raise (UpdateError "Error: You can't start a chat with yourself!")
     else
       begin
+        let corrected_username = get_username st.state accepting_uid in
         let new_chatid = st.chatid + 1 in
-        print_endline ("Creating priv chat with " ^ username ^ " of chatid " ^
-                       string_of_int new_chatid);
+        print_endline ("Creating priv chat with " ^ corrected_username
+                       ^ " of chatid " ^ string_of_int new_chatid);
         let state1 = add_priv_chat st.state uid accepting_uid new_chatid in
         let view_state1 = {st with state = state1} in
         let view_state2 =
@@ -342,7 +343,7 @@ let rec create_private_chat st uid username =
           (new_chatid, (" has started a chat with you."))
           (`NOTIF sender_username) in
         let res' = Some {userid = uid; cmd = make_cmd `CREATE_PRIV_CHAT;
-                         success = true; info = String (username);
+                         success = true; info = String (corrected_username);
                          chatid = new_chatid}
         in {view_state2 with response = res'; chatid = new_chatid}
       end

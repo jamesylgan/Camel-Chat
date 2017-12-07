@@ -13,6 +13,7 @@ let init_state () =
     print = [];
   }
 
+let b = "\027[0m"
 let red = "\027[31m"
 let blue = "\027[34m"
 let green = "\027[32m"
@@ -34,15 +35,18 @@ let change_chat s st =
   let chat_n = s |> String.lowercase_ascii in
   let chats = st.chats |> List.map
                 (fun (n, i) -> (String.lowercase_ascii n, i)) in
+  let chatname = List.fold_left
+      (fun acc (n, i) -> if String.lowercase_ascii n = chat_n then n else acc)
+      "" st.chats in
   if not (List.mem_assoc chat_n chats) then
     {st with print = [red ^ "Error: You are not in chat " ^ purp ^ s ^ red ^ "."]}
   else if (st.curr_chat |> fst |> String.lowercase_ascii) = chat_n then
     {st with print = [red ^ "Error: You are already in the chat."]}
   else {
     userid = st.userid;
-    curr_chat = (s, (List.assoc chat_n chats));
+    curr_chat = (chatname, (List.assoc chat_n chats));
     chats = st.chats;
-    print = [];
+    print = [red ^ "Entering chat " ^ purp ^ chatname ^ red ^ "..." ^ b];
   }
 
 let check_chat s st =
