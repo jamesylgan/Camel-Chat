@@ -122,7 +122,7 @@ let input_of_string s =
   end
   | 'b' -> {userid = (response_uid s); cmd = Get_history (find_chat_id s)}
   | 'c' -> {userid = (response_uid s); cmd = Get_online_users}
-  | 'd' -> {userid = (response_uid s); cmd = Create_priv_chat (find_chat_name s)}
+  | 'd' -> {userid = (response_uid s); cmd = Create_priv_chat(find_chat_name s)}
   | 'e' -> {userid = (response_uid s); cmd = Create_pub_chat (find_chat_name s)}
   | 'f' -> {userid = -1; cmd = Create_user (find_chat_name s)}
   | 'g' -> {userid = (response_uid s); cmd = Join_chat (find_chat_name s)}
@@ -156,7 +156,8 @@ let rec string_of_response res =
     | ISList x ->
       let rec formlist lst str = begin match lst with
         | [] -> str
-        | (junk_uid, h)::t -> formlist t (str ^ (length h |> string_of_int) ^ ":" ^ h)
+        | (junk_uid, h)::t -> formlist t
+                                (str ^ (length h |> string_of_int) ^ ":" ^ h)
       end in formlist x ""
     | _ -> failwith "Don't use this not on info" end in
   begin match res.success with
@@ -307,12 +308,24 @@ let send_msg st uid (chatid, msg) =
     | None -> blue ^ str
     | Some x -> begin
         match String.sub str 0 (String.index str ':' + 1) with
-        | "red:" -> red ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
-        | "blue:"-> blue ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
-        | "green:"-> green ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
-        | "purple:"-> purple ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
-        | "cyan:"-> cyan ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
-        | "yellow:"-> yellow ^ (String.sub str (String.index str ':' + 1) (String.length str - (String.index str ':' + 1)))
+        | "red:" ->
+          red ^ (String.sub str (String.index str ':' + 1)
+                   (String.length str - (String.index str ':' + 1)))
+        | "blue:"->
+          blue ^ (String.sub str (String.index str ':' + 1)
+                    (String.length str - (String.index str ':' + 1)))
+        | "green:"->
+          green ^ (String.sub str (String.index str ':' + 1)
+                     (String.length str - (String.index str ':' + 1)))
+        | "purple:"->
+          purple ^ (String.sub str (String.index str ':' + 1)
+                      (String.length str - (String.index str ':' + 1)))
+        | "cyan:"->
+          cyan ^ (String.sub str (String.index str ':' + 1)
+                    (String.length str - (String.index str ':' + 1)))
+        | "yellow:"->
+          yellow ^ (String.sub str (String.index str ':' + 1)
+                      (String.length str - (String.index str ':' + 1)))
         | _ -> blue ^ msg
       end in
   print_endline ("msg received: " ^ msg ^ " for chat " ^ string_of_int chatid);

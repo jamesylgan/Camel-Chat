@@ -109,7 +109,7 @@ and handle_change_chat s w =
   let chatname = sub s (start + 1) (length - start - 1) in
   st := change_chat chatname !st;
   print ();
-  let error = Str.regexp (red ^ "Error:\\(.+\\)") in
+  let error = Str.regexp ("\027\[31mError:\\(.+\\)") in
   if (not (Str.string_match error (List.hd (get_print !st)) 0))
   then Writer.write_line w (parse_send "#history" !st)
 
@@ -149,7 +149,8 @@ and read_create_username r w =
 and handle_create_user res r w =
   st := parse_receive res !st;
   print ();
-  if (get_userid !st) = -1 then (printc_string red "> "; create_user r w) else return ()
+  if (get_userid !st) = -1 then
+    (printc_string red "> "; create_user r w) else return ()
 
 (* [rw_loop r w] initializes the read and write asynchronous loops. *)
 let rw_loop r w =

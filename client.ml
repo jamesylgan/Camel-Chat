@@ -71,7 +71,8 @@ let check_chat s st =
     else {st with print = [red ^ "Error: You are already in the chat!"]}
   else if (Str.string_match leave_chat s 0)
   then let name = sub s 7 ((length s) - 7) |> String.lowercase_ascii in
-    if name = "lobby" then {st with print = [red ^ "Error: You can't leave the lobby!"]}
+    if name = "lobby"
+    then {st with print = [red ^ "Error: You can't leave the lobby!"]}
     else if (List.mem_assoc name chats_low) then {st with print = []}
     else {st with print = [red ^ "Error: You are not in chat " ^ purp ^ name]}
   else {st with print = []}
@@ -120,7 +121,8 @@ let rec check_lower lst cname acc =
   | [] -> List.rev acc
   | (chatname, chatid)::t ->
     if String.lowercase_ascii chatname = String.lowercase_ascii cname
-    then List.rev_append acc t else check_lower t cname ((chatname, chatid)::acc)
+    then List.rev_append acc t
+    else check_lower t cname ((chatname, chatid)::acc)
 
 (* A helper function for [parse_receive] that extracts infromation from
  * string of the format "<len>:<name>". *)

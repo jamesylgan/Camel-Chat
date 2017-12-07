@@ -61,14 +61,16 @@ let get_pub_chats st =
   if x = [] then raise(UpdateError "Error: No public chats") else x
 
 let get_users_of_chat st cid =
-  try (try List.assoc cid st.pub_chat_list with _ -> List.assoc cid st.priv_chat_list)
+  try (try List.assoc cid st.pub_chat_list
+       with _ -> List.assoc cid st.priv_chat_list)
   with _-> raise (UpdateError "Error")
 
 let get_conns_of_chat st chatid uid =
   try (
     let uids = get_users_of_chat st chatid in
     List.filter
-    (fun (conn_uid, (conn_r, conn_w)) -> List.mem conn_uid uids && conn_uid <> uid) st.curr_conns)
+      (fun (conn_uid, (conn_r, conn_w)) ->
+         List.mem conn_uid uids && conn_uid <> uid) st.curr_conns)
   with _ -> raise (UpdateError "Error")
 
 let get_history st cid =
@@ -91,10 +93,10 @@ let add_msg st uid (cid, msg) =
 let add_user st uid uname =
   let open List in
   let user_list' = (uid, uname) ::
-                   if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
-                      || (List.mem_assoc (lc uname) (fst_lc st.pub_chat_names))
-                   then raise (UpdateError "Error: Username taken, please try again.")
-                   else st.user_list in
+             if (List.map (fun (_,n) -> lc n) st.user_list) |> mem (lc uname)
+                || (List.mem_assoc (lc uname) (fst_lc st.pub_chat_names))
+             then raise (UpdateError "Error: Username taken, please try again.")
+             else st.user_list in
   {st with user_list = user_list'}
 
 let add_conn st uid (r,w) =
@@ -133,11 +135,13 @@ let is_username st chatname =
       if uname = chatname then acc else true || acc) false st.user_list
 
 let get_username st uid =
-  try List.assoc uid st.user_list with _ -> raise (UpdateError "Error: User not found")
+  try List.assoc uid st.user_list with _ ->
+    raise (UpdateError "Error: User not found")
 
 let get_uid st uname =
   try (
-    let inv = Core.List.Assoc.inverse st.user_list in List.assoc (lc uname) (fst_lc inv))
+    let inv = Core.List.Assoc.inverse st.user_list in
+    List.assoc (lc uname) (fst_lc inv))
   with _ -> raise (UpdateError ("Error: User not found"))
 
 let get_chatid st chatname =
