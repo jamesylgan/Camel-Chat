@@ -22,7 +22,7 @@ let quit_regex = Str.regexp {|^#quit\(;;\)?$|}
 
 (* [matches s r] is true if [s] and [r] match. *)
 let matches s r =
-  Str.string_match r s 0
+  Str.string_match r (String.trim s) 0
 
 (* [read_cmdline ()] performs the read loop on the stdlin on server.  *)
 let rec read_cmdline () =

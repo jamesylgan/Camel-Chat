@@ -4,13 +4,7 @@ open State
 
 let view_state0 = Server.init_state ()
 let st0 = State.init_state ()
-
-(*let new_uid = st0.uid + 1 in
-  let state1 = add_user st0.state new_uid "bob" in
-  let state2 = add_user_to_pub_chat state1 new_uid 0 in
-  let st1 = {st0 with state = state2; uid = st0.uid + 1}*)
 let view_state1 = create_pub_chat view_state0 1 "chatroom 1"
-
 let st1 =
   let chatid = view_state0.chatid + 1 in
   let uid = 1 in
@@ -18,6 +12,19 @@ let st1 =
    pub_chat_list = [(chatid, [uid]); (0, [])];
    pub_chat_names = [("chatroom 1", chatid); ("Lobby", 0)];
    chat_msg = [(chatid, []); (0, [])]}
+let st2 =
+  {State.curr_conns = []; user_list = [(1,"groot")]; priv_chat_list = [];
+   pub_chat_list = [(1, []); (0, [])];
+   pub_chat_names = [("chatroom 1", 1); ("Lobby", 0)];
+   chat_msg = [(1, []); (0, [])]}
+let view_state5 = {view_state1 with state = st2}
+let view_state2 = get_users view_state1 1
+let view_state3 = get_users view_state5 1
+let view_state4 = join_chat view_state5 1 "chatroom 2"
+let view_state6 = join_chat view_state5 1 "chatroom 1"
+let view_state7 = leave_chat view_state5 1 "chatroom 1"
+let view_state8 = leave_chat view_state5 1 "chatroom 2"
+
 
 let a = "a, 1:0, 6:h,ey:!, 2:15"
 let b = "b, 2:10, 1:7"
@@ -95,19 +102,72 @@ let tests_server = [
     }));
   "test create pub chat" >:: (fun _ -> assert_equal view_state1 ({
       view_state0 with response = (Some {userid = 1; cmd = "e";
-                                 success = true; info = String ("chatroom 1");
+                                         success = true;
+                                         info = String ("chatroom 1");
                                  chatid = 1});
                state = st1;
                chatid = 1
     }));
+  "test get users fail" >:: (fun _ -> assert_equal view_state2 ({
+        view_state1 with response = (Some
+                                       {userid = 1;
+                                        cmd = "c";
+                                        success = false;
+                                        info = String ("No online users");
+                                        chatid = -1});
+                         state = st1;
+                         chatid = 1
+    }));
+  "test get users success" >:: (fun _ ->
+      assert_equal view_state3
+        ({view_state1 with response = (Some
+                                         {userid = 1;
+                                          cmd = "c";
+                                          success = true;
+                                          info = SList (["groot"]);
+                                          chatid = -1});
+                          state = st2;
+                          chatid = 1
+    }));
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+  "test join chat fail" >:: (fun _ -> assert_equal view_state4 ({
+      view_state5 with response = (Some
+                                     {userid = 1;
+                                      cmd = "g";
+                                      success = false;
+                                      info = String ("Chat not found");
+                                      chatid = -1})
+    }));
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+  "test join chat success" >:: (fun _ -> assert_equal view_state6 ({
+      view_state5 with response = (Some
+                                     {userid = 1;
+                                      cmd = "g";
+                                      success = true;
+                                      info = String ("chatroom 1");
+                                      chatid = 1});
+                       state = {st2 with pub_chat_list
+                                         = [(1, [1]); (0, [])]};
+                       chatid = 1
+    }));
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+  "test leave chat success" >:: (fun _ -> assert_equal view_state7 (
+      {view_state5 with response =
+         Some
+           {Server.userid = 1; cmd = "h"; success = true;
+            info = Server.String "chatroom 1"; chatid = 1};
+                        res_string = ""}
 
-  "rj" >:: (fun _ -> assert_equal 0 0);
+    ));
+
+  "test leave chat fail" >:: (fun _ -> assert_equal view_state8 (
+      {view_state5 with response =
+         Some
+           {Server.userid = 1; cmd = "h"; success = false;
+            info = Server.String "You can't leave a private chat!"; chatid = -1};
+                        res_string = ""}
+
+    ));
 
   "rj" >:: (fun _ -> assert_equal 0 0);
 
