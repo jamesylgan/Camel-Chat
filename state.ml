@@ -1,5 +1,7 @@
 exception UpdateError of string
 
+(* [lc] is the same as String.lowercase_ascii. It is an all-lowercase
+ * representation of the argument.*)
 let lc =  String.lowercase_ascii
 
 (* [fst_lc lst] is the association list that is the same as [lst], except that
