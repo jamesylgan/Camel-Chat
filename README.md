@@ -12,15 +12,14 @@ opam install async
 opam install core
 ```
 
-In order to run Camel Chat, we need a computer hosting the server. We can do this by running
+In order to run Camel Chat, we need a computer hosting the server. We can do this by running:
 
 ```
 make PORT=9999 server
 ```
 
-in the command line.
 
-In order to connect with a Camel Chat server, we need to run
+In order to connect with a Camel Chat server, we need to run:
 
 ```
 make HOST="[host IP]" PORT=9999 client
