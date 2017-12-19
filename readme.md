@@ -10,7 +10,7 @@ Camel Chat is a chat system built on OCaml that allows individuals to chat with 
 
 Camel Chat offers numerous features:
 
-*A lobby where you can meet new people
+* A lobby where you can meet new people
 
 * Private chat with a single person
 
